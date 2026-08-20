@@ -1,0 +1,56 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-test:
+    name: Build, Lint, Test, and Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.22.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '26'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check Formatting
+        run: pnpm exec prettier --check .
+
+      - name: Run Linter
+        run: pnpm run lint
+
+      - name: Fallow Architecture & Health Audit
+        run: pnpm exec fallow audit
+
+      - name: Run Typecheck
+        run: pnpm run typecheck
+
+      - name: Run Tests
+        run: pnpm run test:run
+
+      - name: Cache Next.js Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+
+      - name: Build Application
+        run: pnpm run build
