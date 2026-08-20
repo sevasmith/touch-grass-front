@@ -28,7 +28,7 @@
         "decorators-legacy"
     ],
     "importOrderTypeScriptVersion": "5.0.0",
-    "tailwindStylesheet": "src/app/globals.css",
+    "tailwindStylesheet": "src/_app/globals.css",
     "tailwindFunctions": [
         "cn",
         "cva"

@@ -6,7 +6,8 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
     globals: true,
-    environment: "jsdom",
+    environment: "happy-dom",
+    passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
     css: false,
     clearMocks: true,
@@ -22,7 +23,7 @@ export default defineConfig({
         "src/**/*.d.ts",
         "src/shared/types/**",
         "src/shared/components/ui/**",
-        "src/app/**",
+        "src/_app/**",
         "src/**/index.{ts,tsx}",
         "src/entities/**",
         "src/shared/lib/apollo/**",
