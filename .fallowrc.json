@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "ignoreDependencies": ["tailwindcss", "lucide-react"],
+  "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
+  "duplicates": {
+    "minOccurrences": 3
+  },
+  "rules": {
+    "unused-dependencies": "warn"
+  }
+}
