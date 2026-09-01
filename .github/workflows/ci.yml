@@ -1,12 +1,18 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
+  push:
+    branches: [main]
   pull_request:
     types: [opened, synchronize, reopened]
 
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
 jobs:
-  build-and-test:
-    name: Build, Lint, Test, and Audit
+  build-test-deploy:
+    name: Build, Lint, Test, and Deploy
     runs-on: ubuntu-latest
 
     steps:
@@ -29,30 +35,28 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check Formatting
-        run: pnpm exec prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}" "README.md"
+      - name: Check Formatting & Lint
+        run: |
+          pnpm exec prettier --check "src/**/*.{js,jsx,ts,tsx,json,css,md}" "README.md"
+          pnpm run lint
+          pnpm exec fallow audit
+          pnpm run typecheck
 
-      - name: Run Linter
-        run: pnpm run lint
-
-      - name: Fallow Architecture & Health Audit
-        run: pnpm exec fallow audit
-
-      - name: Run Typecheck
-        run: pnpm run typecheck
-
-      - name: Run Tests
+      - name: Run Unit Tests (Vitest)
         run: pnpm run test:run
 
-      - name: Cache Next.js Build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
 
-      - name: Build Application
-        run: pnpm run build
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=${{ github.ref == 'refs/heads/main' && 'production' || 'preview' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel
+        id: deploy
+        run: |
+          DEPLOY_URL=$(vercel deploy --prebuilt ${{ github.ref == 'refs/heads/main' && '--prod' || '' }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
+          echo "Successfully deployed to: $DEPLOY_URL"
