@@ -24,7 +24,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 | Server State         | TanStack React Query 5                               |
 | Forms                | React Hook Form 7 + @hookform/resolvers              |
 | Validation           | Zod 4                                                |
-| Auth                 | Auth0 (`@auth0/nextjs-auth0`)                        |
 | Icons                | Lucide React                                         |
 | Testing              | Vitest 4, Testing Library (React + DOM), happy-dom   |
 | Linting / Formatting | ESLint 9 (flat config), Prettier, lint-staged, Husky |
