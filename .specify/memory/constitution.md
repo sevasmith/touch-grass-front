@@ -18,13 +18,16 @@ Deferred TODOs:   None
 
 ## Core Engineering Principles
 
-### I. Foundational Stack
+### I. Foundational Stack (Frontend-Only Architecture)
+
+This repository is a **Frontend-only application**. All backend logic, database connections, ORMs, and email dispatchers MUST be handled by an external backend service. Do not install backend dependencies (e.g., TypeORM, Prisma, pg, nodemailer, etc.) in this repository.
 
 All development MUST strictly utilize **TypeScript**, **React**, and **Next.js** using the App
 Router paradigm.
 
 - Next.js Server Components (RSC) MUST be used by default; the `"use client"` directive is only
   permitted when a component genuinely requires browser APIs, hooks, or event handlers.
+- Server Actions (running on the Node.js server layer of Next.js) SHOULD act only as thin proxies/BFF (Backend-For-Frontend) to call the external backend API and manage HTTP-only cookies.
 - Introducing new npm packages or third-party dependencies is FORBIDDEN without explicit user
   approval. Evaluate whether the requirement can be met by the existing stack first.
 
@@ -35,10 +38,10 @@ predictable, auditable, and maintainable.
 
 The project architecture MUST strictly follow the **Feature-Sliced Design** methodology.
 
-- Code MUST be divided into the standard FSD layers: `shared`, `entities`, `features`, `widgets`,
-  `pages`, and `app` (mapped to Next.js `app/`).
+- Code MUST be divided into the standard FSD layers adapted for Next.js: `shared`, `entities`, `features`,
+  `widgets`, `_pages` (prefixed to avoid Next.js Pages Router conflict), and `_app` (with framework routing in root `app/`).
 - Imports MUST only flow downward through the layer hierarchy:
-  `app → pages → widgets → features → entities → shared`
+  `app → _pages → widgets → features → entities → shared`
 - Cross-imports between slices at the **same layer** are FORBIDDEN. Shared logic MUST be extracted
   to a lower layer.
 - Every slice MUST expose a public API via an `index.ts` barrel file. Deep imports (e.g.,

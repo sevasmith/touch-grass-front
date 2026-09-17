@@ -81,7 +81,7 @@ Path alias: `@/*` → `./src/*`
 app/                     ← Next.js App Router (routing & layouts ONLY)
 src/
   _app/                  ← App-wide concerns (globals.css, providers, root styles)
-  pages/                 ← FSD page-layer composites
+  _pages/                ← FSD page-layer composites (prefixed to avoid Next.js conflict)
   widgets/               ← Self-contained UI blocks composed from features/entities
   features/              ← User interactions & use-cases (e.g., auth-form, create-post)
   entities/              ← Core domain objects (e.g., user, session, post)
@@ -100,7 +100,7 @@ src/
 Imports flow **strictly downward**. A layer may only import from layers below it:
 
 ```
-app → pages → widgets → features → entities → shared
+app → _pages → widgets → features → entities → shared
 ```
 
 Violating this order is forbidden. `shared` may never import from any layer above it.
@@ -110,7 +110,7 @@ Violating this order is forbidden. `shared` may never import from any layer abov
 The `app/` directory is **exclusively** for routing concerns:
 
 - `layout.tsx` — Layouts, providers, metadata.
-- `page.tsx` — **Thin wrappers only.** A `page.tsx` must import and render a component from `src/pages/` or `src/widgets/`. It must not contain business logic, data fetching, or local state.
+- `page.tsx` — **Thin wrappers only.** A `page.tsx` must import and render a component from `src/_pages/` or `src/widgets/`. It must not contain business logic, data fetching, or local state.
 - `loading.tsx`, `error.tsx`, `not-found.tsx` — Framework boundary files only.
 
 All business logic, data fetching, and non-trivial UI live inside `src/`.

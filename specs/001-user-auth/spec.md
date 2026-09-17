@@ -281,6 +281,8 @@ authenticated dashboard.
 
 ### Key Entities
 
+_(Note: Because this is a frontend-only repository, these entities describe the business domain handled by the external backend API. The frontend only interacts with these concepts via API Data Transfer Objects (DTOs) and session cookies, and is not responsible for their database persistence or internal hashing)._
+
 - **User Account**: Represents a registered user. Key attributes: unique email address
   (normalised), hashed password, account creation timestamp, `email_verified` flag (MUST be
   `true` before the account can access any protected route), failed-login attempt counter,
