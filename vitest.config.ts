@@ -11,7 +11,7 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     css: false,
     clearMocks: true,
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}", "*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "text-summary", "lcov"],
