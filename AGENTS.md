@@ -1,15 +1,3 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
-
----
-
 # Touch Grass — Project Rules
 
 ## Project Stack
@@ -56,7 +44,7 @@ Path alias: `@/*` → `./src/*`
 
 ### Components — shadcn/ui
 
-- shadcn/ui components live in `src/shared/components/ui/`.
+- shadcn/ui components live in `src/shared/ui/`. Both generated primitives and custom UI components share this directory as equals.
 - Add new components via `npx shadcn@latest add <component>`. Do not manually create files that shadcn can scaffold.
 - Customise shadcn components in place; do not wrap them in unnecessary abstraction layers unless adding real logic.
 
@@ -81,13 +69,12 @@ Path alias: `@/*` → `./src/*`
 app/                     ← Next.js App Router (routing & layouts ONLY)
 src/
   _app/                  ← App-wide concerns (globals.css, providers, root styles)
-  pages/                 ← FSD page-layer composites
+  _pages/                 ← FSD page-layer composites
   widgets/               ← Self-contained UI blocks composed from features/entities
   features/              ← User interactions & use-cases (e.g., auth-form, create-post)
   entities/              ← Core domain objects (e.g., user, session, post)
   shared/                ← Reusable, domain-agnostic code
-    components/          ← Shared UI components
-      ui/                ← shadcn/ui primitives
+    ui/                  ← Shared UI components (both custom and shadcn/ui primitives)
     lib/                 ← Utility functions (cn, helpers)
     hooks/               ← Shared hooks
     api/                 ← API client, query keys, fetch wrappers
@@ -100,7 +87,7 @@ src/
 Imports flow **strictly downward**. A layer may only import from layers below it:
 
 ```
-app → pages → widgets → features → entities → shared
+app / _app → _pages → widgets → features → entities → shared
 ```
 
 Violating this order is forbidden. `shared` may never import from any layer above it.
@@ -110,7 +97,7 @@ Violating this order is forbidden. `shared` may never import from any layer abov
 The `app/` directory is **exclusively** for routing concerns:
 
 - `layout.tsx` — Layouts, providers, metadata.
-- `page.tsx` — **Thin wrappers only.** A `page.tsx` must import and render a component from `src/pages/` or `src/widgets/`. It must not contain business logic, data fetching, or local state.
+- `page.tsx` — **Thin wrappers only.** A `page.tsx` must import and render a component from `src/_pages/` or `src/widgets/`. It must not contain business logic, data fetching, or local state.
 - `loading.tsx`, `error.tsx`, `not-found.tsx` — Framework boundary files only.
 
 All business logic, data fetching, and non-trivial UI live inside `src/`.
