@@ -1,0 +1,25 @@
+# Heavy lockfiles that destroy context limits
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Core dependencies and Next.js build output 
+# (Often covered by .gitignore, but safe to explicitly block for the AI)
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Media and large assets you track in Git but the AI shouldn't read
+public/**/*.svg
+public/**/*.png
+public/**/*.jpg
+public/**/*.ico
+public/**/*.webp
+
+# Large static data, maps, or minified files
+*.min.js
+*.min.css
+*.map
+*.geojson

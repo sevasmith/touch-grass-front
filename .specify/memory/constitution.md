@@ -1,30 +1,49 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change:   (none) → 1.0.0
-Action:           Initial ratification — constitution created from user-supplied principles.
-Added sections:
-  - Core Engineering Principles (I–VI)
-  - Code Quality & UX Standards (VII–X)
-  - Security & Data Constraints
-  - Development Workflow & Quality Gates
-  - Governance
-Removed sections: N/A (first version)
-Modified principles: N/A (first version)
+Version change:   1.1.0 → 1.2.0
+Action:           Amendment — FSD layer naming for Next.js compatibility and flat UI structure
+                  enforcement added.
+Added sections:   N/A
+Modified principles:
+  - II. Feature-Sliced Design (FSD) (clarified underscore naming for _app and _pages layers;
+    enforced flat UI structure in shared/ui; prohibited nested components directories)
+Removed sections: N/A
 Deferred TODOs:   None
 -->
 
 # Touch Grass Constitution
+
+## Scope & Repository Boundaries
+
+This repository is **exclusively** the Touch Grass **Next.js frontend**. The **NestJS backend
+lives in a separate repository** and is **out of scope** here. This frontend is a pure client of
+an external API: it consumes the backend over **REST/GraphQL** and MUST NOT contain backend
+service code, database access, or server-side business logic beyond what Next.js server
+components, route handlers, and server actions require in order to call that external API.
+
+- All domain data originates from the external REST/GraphQL API. This repository owns
+  presentation, client-side state, and API-consumption logic only.
+- "Server-side" in this document refers to the **Next.js server runtime** (RSC, route handlers,
+  server actions) — never the NestJS backend.
+
+**Rationale:** A clear frontend/backend boundary prevents scope creep, keeps this codebase a
+focused API consumer, and avoids duplicating backend responsibilities that belong to a separate
+repository.
 
 ## Core Engineering Principles
 
 ### I. Foundational Stack
 
 All development MUST strictly utilize **TypeScript**, **React**, and **Next.js** using the App
-Router paradigm.
+Router paradigm, targeting a **frontend-only** environment that consumes an external REST/GraphQL
+API.
 
 - Next.js Server Components (RSC) MUST be used by default; the `"use client"` directive is only
   permitted when a component genuinely requires browser APIs, hooks, or event handlers.
+- The UI layer MUST be built with **Tailwind CSS** for styling and **shadcn/ui** for component
+  primitives. Competing CSS-in-JS solutions or alternative component libraries MUST NOT be
+  introduced.
 - Introducing new npm packages or third-party dependencies is FORBIDDEN without explicit user
   approval. Evaluate whether the requirement can be met by the existing stack first.
 
@@ -36,13 +55,22 @@ predictable, auditable, and maintainable.
 The project architecture MUST strictly follow the **Feature-Sliced Design** methodology.
 
 - Code MUST be divided into the standard FSD layers: `shared`, `entities`, `features`, `widgets`,
-  `pages`, and `app` (mapped to Next.js `app/`).
+  `_pages`, and `_app`. To avoid naming collisions with Next.js's native `app/` and `pages/`
+  directories, the FSD layers inside `src/` MUST use underscore prefixes: `src/_app/` for the FSD
+  app layer and `src/_pages/` for the FSD pages layer. The native Next.js router directory remains
+  `app/` at the project root.
 - Imports MUST only flow downward through the layer hierarchy:
-  `app → pages → widgets → features → entities → shared`
+  `app / _app → _pages → widgets → features → entities → shared`
 - Cross-imports between slices at the **same layer** are FORBIDDEN. Shared logic MUST be extracted
   to a lower layer.
 - Every slice MUST expose a public API via an `index.ts` barrel file. Deep imports (e.g.,
   `@/features/auth/model/store`) are FORBIDDEN for external consumers.
+- All **shadcn/ui** components MUST be placed strictly within the `shared/ui` slice as flat files.
+  Both generated shadcn/ui primitives and custom UI components share this directory as equals.
+  Using nested structures like `shared/components/` or `shared/components/ui/` is FORBIDDEN.
+  Placing these primitives in any higher layer (`entities`, `features`, `widgets`, `_pages`, `_app`)
+  is FORBIDDEN, as domain-agnostic UI belongs at the lowest layer and any other placement violates
+  the downward-only import rule.
 
 **Rationale:** FSD enforces clear ownership boundaries, prevents coupling between unrelated
 features, and makes the codebase navigable as it grows.
@@ -80,8 +108,8 @@ genuine application-wide concern justifies global state.
 
 - Global state (e.g., Zustand stores) is ONLY permitted for application-wide concerns such as
   the authenticated user session and shared map coordinate data.
-- Server state (data-fetching) MUST be managed via **TanStack React Query**; do not duplicate
-  server state in client stores.
+- Server state (data fetched from the external REST/GraphQL API) MUST be managed via
+  **TanStack React Query**; do not duplicate server state in client stores.
 
 **Rationale:** Minimizing global state reduces unexpected interactions between unrelated features
 and simplifies debugging.
@@ -118,8 +146,8 @@ entire classes of runtime errors.
 
 The application MUST never crash from external API failures or unexpected AI outputs.
 
-- All async operations and external API calls MUST be wrapped in `try/catch` blocks. Silent
-  failure is FORBIDDEN; errors MUST be logged appropriately.
+- All async operations and calls to the external REST/GraphQL API MUST be wrapped in `try/catch`
+  blocks. Silent failure is FORBIDDEN; errors MUST be logged appropriately.
 - **Map Fallback:** If the AI routing engine fails to return valid GeoJSON, the system MUST
   gracefully parse and render the data as independent points, or display a friendly toast
   notification to the user.
@@ -154,12 +182,18 @@ and improves UX for all users (e.g., keyboard power users, low-light conditions)
 
 ## Security & Data Constraints
 
+As a frontend-only client of an external REST/GraphQL API, this repository MUST treat all data
+crossing the network boundary as untrusted and MUST never expose privileged credentials to the
+browser.
+
 - **Authentication Flow:** Unauthenticated access to protected routes MUST result in immediate
   redirection to the login flow.
 - **Data Sanitization:** All user inputs — especially natural language prompts and chat messages
-  MUST be aggressively sanitized before rendering to prevent Cross-Site Scripting (XSS) attacks.
-- **Secrets Management:** API keys MUST NEVER be hardcoded into client-side code. All secrets MUST
-  be managed via environment variables and accessed server-side only where possible.
+  — MUST be aggressively sanitized before rendering to prevent Cross-Site Scripting (XSS) attacks.
+- **Secrets Management:** API keys and secrets for the external API MUST NEVER be hardcoded into
+  client-side code. All secrets MUST be managed via environment variables and accessed only within
+  the Next.js server runtime; privileged calls MUST be proxied server-side rather than exposed to
+  the browser.
 
 ## Development Workflow & Quality Gates
 
@@ -190,4 +224,4 @@ alternative compliant path MUST be proposed.
 All amendments MUST update the version line and `Last Amended` date. The Sync Impact Report
 HTML comment at the top of this file MUST be updated with each revision.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-08
+**Version**: 1.2.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-30
