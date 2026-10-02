@@ -130,7 +130,7 @@ the placeholder routes. Every user story depends on this phase.
 
 ### Shared: key-value store port (refresh coordinator backing)
 
-- [ ] T015 [P] Write failing tests in `src/shared/lib/kv/memory-store.test.ts`: `setNx` returns `true` once and then `false` while the key is live; keys expire after `ttlMs` (fake timers); `set` overwrites; `del` removes; the store is shared through a `globalThis` key across module re-imports (`vi.resetModules`)
+- [x] T015 [P] Write failing tests in `src/shared/lib/kv/memory-store.test.ts`: `setNx` returns `true` once and then `false` while the key is live; keys expire after `ttlMs` (fake timers); `set` overwrites; `del` removes; the store is shared through a `globalThis` key across module re-imports (`vi.resetModules`)
 - [ ] T016 [P] Write failing tests in `src/shared/lib/kv/upstash-store.test.ts` with mocked `fetch`:
   - each op is a `POST` to `UPSTASH_REDIS_REST_URL` with `Authorization: Bearer <token>` and a JSON command array (`["GET", k]`, `["SET", k, v, "NX", "PX", ttl]`, `["SET", k, v, "PX", ttl]`, `["DEL", k]`)
   - responses are parsed with `UpstashResponseSchema` (`{ result: unknown } | { error: string }`)
