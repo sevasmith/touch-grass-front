@@ -283,9 +283,14 @@ sets the cookie, since the backend's cooldown applies, and starts the countdown.
   per the Figma layer name. The form column is centered at `max-w-[440px]` with `p-20`, and the
   footer is pinned to the bottom of the right panel. Mobile-first: the single column uses `px-4`.
 - **Assets**: download the hero image, the Google logo, and the help-icon SVG from the Figma MCP into
-  `public/images/auth-hero.png`, `public/icons/google.png`, and `public/icons/help.svg`. Render with
+  `public/images/auth-hero.jpg`, `public/icons/google.png`, and `public/icons/help.svg`. Render with
   `next/image` (`priority` for the hero, a fixed-size box to avoid layout shift, per SC-009).
   GitHub and Discord assets are **not** used (FR-026).
+- **Asset outcome (T006, 2026-10-02)**: the hero's original upload in Figma is a 343×512 JPEG, so
+  it is saved as `auth-hero.jpg` (the true format) rather than an upscaled PNG. It will look soft on
+  the 640px-wide panel, especially on high-DPI screens; a higher-resolution source is a design
+  follow-up. The Google logo's source is a JPEG with an opaque white background, so `google.png` is
+  the node's transparent PNG export at 2× (48×48) for a 24px slot.
 - The footer and help icon are static and decorative (user decision). The help icon is
   `aria-hidden`, and the footer "links" are plain text.
 

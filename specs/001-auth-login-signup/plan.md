@@ -149,7 +149,7 @@ app/                                      # routing only (thin wrappers)
 └── error.tsx                             # framework error boundary; renders <RouteErrorFallback>
 
 public/
-├── images/auth-hero.png                  # Figma asset (left panel)
+├── images/auth-hero.jpg                  # Figma asset (left panel)
 └── icons/{google.png,help.svg}           # Figma assets
 
 src/
