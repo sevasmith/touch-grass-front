@@ -137,7 +137,7 @@ the placeholder routes. Every user story depends on this phase.
   - `setNx` → `true` on `"OK"`, `false` on `null`
   - an `{ error }`, a non-2xx, or a network failure throws `KvError`
 - [x] T017 Implement `src/shared/lib/kv/types.ts` (`KeyValueStore` interface: `get`, `setNx`, `set`, `del`, all async; `KvError` class) and `src/shared/lib/kv/memory-store.ts` (`createMemoryStore()` backed by a `globalThis`-scoped `Map` with TTLs)
-- [ ] T018 Implement `src/shared/lib/kv/upstash-store.ts` (`import "server-only"`; `createUpstashStore({ url, token })` using plain `fetch`, no SDK; research R2)
+- [x] T018 Implement `src/shared/lib/kv/upstash-store.ts` (`import "server-only"`; `createUpstashStore({ url, token })` using plain `fetch`, no SDK; research R2)
 - [ ] T018a [P] Write failing tests in `src/shared/lib/kv/get-kv-store.test.ts` (mock `@/shared/config/env.server`, `./upstash-store`, and `./memory-store`, and check which factory is called): `getKvStore()` returns the Upstash store when `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set and the memory store otherwise, and returns the same instance on repeated calls (memoized on `globalThis`; clear the key and call `vi.resetModules()` between tests)
 - [ ] T019 Implement `src/shared/lib/kv/get-kv-store.ts` (`import "server-only"`): `getKvStore()` returns the Upstash store when `serverEnv.UPSTASH_REDIS_REST_URL` and the token are set and otherwise the memory store, memoized on `globalThis`. Then create the barrel `src/shared/lib/kv/index.ts` (`import "server-only"`), which only re-exports `getKvStore`, `KvError`, and the `KeyValueStore` type (barrels are excluded from coverage, so they hold no logic)
 
