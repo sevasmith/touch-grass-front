@@ -4,11 +4,8 @@ import type { Route } from "next"
 import { useRouter } from "next/navigation"
 import { useMutation } from "@tanstack/react-query"
 
+import { AUTH_ROUTES } from "../config/routes"
 import type { AuthErrorCode } from "../model/auth-error"
-
-// TODO(T068, T091): drop these casts once the /login and /verify-email routes exist.
-const SESSION_EXPIRED_ROUTE = "/login?reason=session_expired" as Route
-const VERIFY_EMAIL_ROUTE = "/verify-email" as Route
 
 type AuthResultLike =
   { ok: true; redirectTo?: Route } | { ok: false; error: AuthErrorCode }
@@ -55,9 +52,9 @@ export function useAuthMutation<TInput, TResult extends AuthResultLike>(
         return
       }
       if (result.error === "SESSION_EXPIRED")
-        return router.replace(SESSION_EXPIRED_ROUTE)
+        return router.replace(AUTH_ROUTES.sessionExpired)
       if (result.error === "EMAIL_NOT_VERIFIED")
-        return router.replace(VERIFY_EMAIL_ROUTE)
+        return router.replace(AUTH_ROUTES.verifyEmail)
       onFailure?.(result as AuthFailure<TResult>)
     },
   })
