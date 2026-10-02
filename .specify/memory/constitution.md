@@ -1,15 +1,36 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change:   1.1.0 → 1.2.0
-Action:           Amendment — FSD layer naming for Next.js compatibility and flat UI structure
-                  enforcement added.
-Added sections:   N/A
-Modified principles:
-  - II. Feature-Sliced Design (FSD) (clarified underscore naming for _app and _pages layers;
-    enforced flat UI structure in shared/ui; prohibited nested components directories)
+Version change:   1.4.0 → 1.5.0
+Action:           Amendment raised by /speckit-analyze on 001-auth-login-signup (findings D2, D3).
+                  1. Scope and Security → Session Storage now explicitly allow a short-lived,
+                     encrypted, server-only refresh-coordination cache. Single-flight refresh on a
+                     serverless runtime needs state shared across instances, which the letter of
+                     "only in cookies" and "no database access" forbade. MINOR: it materially
+                     expands what is permitted.
+                  2. Review Gates now define the gate for a test-first (Red) task, which by design
+                     ends with failing tests that may not compile yet. PATCH-level clarification,
+                     folded into this MINOR bump.
+Added sections: N/A
+Modified principles / sections:
+  - Scope & Repository Boundaries (refresh-coordination cache is not "database access")
+  - Security & Data Constraints → Session Storage (bounded exception for the coordination cache)
+  - Development Workflow & Quality Gates → Review Gates (Red-task gate)
 Removed sections: N/A
-Deferred TODOs:   None
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no change needed
+  - .specify/templates/spec-template.md ✅ no change needed
+  - .specify/templates/tasks-template.md ✅ no change needed (no review-gate text)
+Previous amendment (1.3.0 → 1.4.0): Session Lifecycle separates a refresh the backend rejects
+  (401: clear the session) from a transient refresh failure (keep the session).
+Earlier amendment (1.2.0 → 1.3.0): aligned with the NestJS backend contract
+  (docs/backend-readme.md): Backend-for-Frontend (BFF) session model, three-tier access, session
+  lifecycle, API error contract, and URL-borne single-use token handling.
+Deferred TODOs:
+  - TODO(BACKEND_RATE_LIMIT_IP): Backend rate limits are per client IP. Behind the BFF every
+    request originates from the Next.js server, so all users would share one limit
+    (e.g. 5 logins/min globally). The backend MUST be configured to trust the proxy and derive
+    the client IP from X-Forwarded-For (and the BFF MUST forward it) before production.
 -->
 
 # Touch Grass Constitution
@@ -26,6 +47,17 @@ components, route handlers, and server actions require in order to call that ext
   presentation, client-side state, and API-consumption logic only.
 - "Server-side" in this document refers to the **Next.js server runtime** (RSC, route handlers,
   server actions) — never the NestJS backend.
+- The backend API contract (endpoints, payloads, status codes, error messages, auth tiers) is
+  documented in `docs/backend-readme.md`. It is the **source of truth** for all API-facing code;
+  Zod schemas and specs MUST match it, and divergences MUST be resolved by updating that document
+  from the backend repository — never by guessing.
+- The Next.js server runtime acts as a **Backend-for-Frontend (BFF)**: it proxies calls to the
+  external API and owns the session cookies (see _Backend Integration Contract_).
+- A **refresh-coordination cache** (a managed key-value store such as Redis, used only to make
+  token refresh single-flight across server instances, see _Session Storage_) is part of what the
+  BFF needs in order to call the external API. It is not "database access": it MUST hold no domain
+  data, and its entries MUST expire within seconds. Any other server-side persistence remains
+  forbidden.
 
 **Rationale:** A clear frontend/backend boundary prevents scope creep, keeps this codebase a
 focused API consumer, and avoids duplicating backend responsibilities that belong to a separate
@@ -110,6 +142,9 @@ genuine application-wide concern justifies global state.
   the authenticated user session and shared map coordinate data.
 - Server state (data fetched from the external REST/GraphQL API) MUST be managed via
   **TanStack React Query**; do not duplicate server state in client stores.
+- Access and refresh tokens MUST NOT be held in any client-side state (Zustand, React Query cache,
+  `localStorage`, `sessionStorage`, or non-httpOnly cookies). Client-visible session state is
+  limited to the user profile returned by `GET /auth/me` (`id`, `email`, `emailVerified`).
 
 **Rationale:** Minimizing global state reduces unexpected interactions between unrelated features
 and simplifies debugging.
@@ -187,13 +222,97 @@ crossing the network boundary as untrusted and MUST never expose privileged cred
 browser.
 
 - **Authentication Flow:** Unauthenticated access to protected routes MUST result in immediate
-  redirection to the login flow.
+  redirection to the login flow. Authenticated users whose email is not verified MUST be
+  redirected to the email-verification screen (see _Three-Tier Access_).
 - **Data Sanitization:** All user inputs — especially natural language prompts and chat messages
   — MUST be aggressively sanitized before rendering to prevent Cross-Site Scripting (XSS) attacks.
 - **Secrets Management:** API keys and secrets for the external API MUST NEVER be hardcoded into
   client-side code. All secrets MUST be managed via environment variables and accessed only within
   the Next.js server runtime; privileged calls MUST be proxied server-side rather than exposed to
   the browser.
+- **Session Storage:** Access and refresh tokens MUST be stored only in cookies set by the
+  Next.js server runtime with `HttpOnly`, `SameSite=Lax`, `Path=/`, and `Secure` in production.
+  Tokens MUST NEVER be returned to, or readable by, browser JavaScript.
+  **Single exception — refresh coordination:** so that concurrent or laggard requests can reuse a
+  freshly rotated pair instead of replaying the old refresh token, the BFF MAY keep the outcome of
+  a refresh in the refresh-coordination cache, subject to all of these conditions: it is encrypted
+  with an authenticated cipher (e.g. AES-256-GCM) under a server-only secret; it is keyed by a hash
+  of the old refresh token, never the plaintext; it expires within 30 seconds; and it is only ever
+  read server-side to write the session cookies.
+- **CSRF:** Because the session lives in cookies, every state-changing route handler MUST verify
+  the request `Origin` matches the frontend origin. Server actions rely on Next.js's built-in
+  origin check, which MUST NOT be disabled.
+- **OAuth Exception:** Google sign-in MUST start with a top-level browser navigation directly to
+  `{API_URL}/auth/google` (link or `window.location`), never via `fetch` or the BFF proxy — the
+  backend's `state` cookie requires it. The public API base URL is therefore exposed as a
+  `NEXT_PUBLIC_` variable; it is not a secret.
+
+## Backend Integration Contract
+
+These rules translate the backend's guarantees (see `docs/backend-readme.md`) into frontend
+obligations. They are non-negotiable because violating them causes forced logouts, security
+holes, or silent breakage.
+
+### Session Lifecycle
+
+- Access tokens and refresh tokens are **opaque**. The frontend MUST NOT decode, parse, or inspect
+  them; user identity and verification state come exclusively from `GET /auth/me`.
+- Refresh tokens are **single-use and rotate**. After every successful `POST /auth/refresh`, the
+  BFF MUST persist the newly returned pair immediately, replacing the old one.
+- Token refresh MUST be **single-flight**: concurrent requests for the same session MUST share one
+  in-flight refresh. Replaying an already-rotated refresh token makes the backend revoke _all_ of
+  the user's sessions, so parallel refreshes are a defect, not a race to tolerate.
+- Refresh MUST happen only in places that can write cookies (Next.js proxy/middleware, route
+  handlers, server actions) — never inside a Server Component.
+- On a `401` from a protected endpoint, the BFF MAY refresh once and retry once. If the backend
+  **rejects** the refresh (`401`: invalid, expired, revoked, or already used), the session cookies
+  MUST be cleared and the user redirected to login. A **transient** refresh failure (network
+  error, timeout, `5xx`, or `429`) MUST NOT clear the session: the refresh token may still be
+  valid, so the user gets a retryable error instead.
+- Logout MUST call `POST /auth/logout` with the refresh token and clear the session cookies
+  regardless of the response.
+
+### Three-Tier Access
+
+The backend has three access tiers, and the frontend MUST mirror them in routing:
+
+| Tier       | Requirement                     | Frontend routes                                     |
+| ---------- | ------------------------------- | --------------------------------------------------- |
+| Public     | none                            | login, signup, forgot/reset password, OAuth landing |
+| Unverified | valid session                   | email-verification screen                           |
+| Verified   | valid session + `emailVerified` | everything else (default)                           |
+
+- New routes MUST default to the **Verified** tier; opting into a looser tier requires explicit
+  justification in the feature spec.
+- A `403` with `message: "Email not verified"` from any endpoint MUST be handled globally by
+  routing the user to the email-verification screen.
+
+### API Error Contract
+
+- Every backend error has the shape `{ statusCode: number, message: string | string[], error:
+string }` (`message` is an array for `400` validation errors). This shape MUST be defined once
+  as a shared Zod schema in `src/shared/api/` and used to parse every non-2xx response.
+- Raw backend payloads, stack traces, or unparsed messages MUST NOT be rendered to users. Errors
+  MUST be mapped to user-facing copy.
+- When the backend deliberately distinguishes messages (e.g. reset link "already used" vs
+  "replaced by a newer request"), the UI MUST preserve that distinction.
+- `429 Too Many Requests` and `503` MUST produce a friendly, non-blocking message; actions with a
+  known cooldown (e.g. resend verification code: 60 s) MUST be disabled for that duration.
+
+### URL-Borne Single-Use Tokens
+
+- Backend-mandated frontend routes MUST exist exactly as specified by the backend:
+  `/reset-password?token=…` and `/oauth/complete?token=…|error=…`.
+- Single-use tokens received in the URL MUST be removed from the address bar and history
+  immediately (`history.replaceState`) and consumed **exactly once** — guarded against React
+  StrictMode double-invocation (e.g. a `useRef` flag) or performed server-side.
+- Every documented `error` code on `/oauth/complete` (`access_denied`, `email_already_in_use`,
+  `too_many_requests`, `oauth_failed`) MUST map to a specific user-facing message with a retry
+  path.
+
+**Rationale:** The backend's security model (token rotation with reuse detection, single-use
+handoff tokens, verification gating) only holds if the client respects it. Encoding these rules
+here prevents each feature from rediscovering them the hard way.
 
 ## Development Workflow & Quality Gates
 
@@ -202,6 +321,12 @@ browser.
 - **Review Gates:** Proceeding to the next task in the plan is FORBIDDEN until the current task
   compiles successfully, all relevant tests are passing, and the user has explicitly approved
   the output.
+- **Red-task gate (TDD):** A test-first task (Principle VI) ends with failing tests by design. Its
+  gate is instead: the new tests run and fail **for the expected reason** (the module under test
+  does not exist yet, or the behavior is not implemented); every previously passing test still
+  passes; and the user has approved the tests. A Red task's commit MAY stay local until its
+  matching implementation (Green) task passes, because push-time hooks run the full test suite and
+  type check.
 
 ## Governance
 
@@ -224,4 +349,4 @@ alternative compliant path MUST be proposed.
 All amendments MUST update the version line and `Last Amended` date. The Sync Impact Report
 HTML comment at the top of this file MUST be updated with each revision.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-09-30
+**Version**: 1.5.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-10-02
