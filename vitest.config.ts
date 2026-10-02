@@ -1,15 +1,25 @@
+import path from "node:path"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vitest/config"
 
 export default defineConfig({
   plugins: [react()],
-  resolve: { tsconfigPaths: true },
+  resolve: {
+    tsconfigPaths: true,
+    alias: {
+      "server-only": path.resolve(
+        import.meta.dirname,
+        "src/test/server-only.ts"
+      ),
+    },
+  },
   test: {
     globals: true,
     environment: "happy-dom",
     passWithNoTests: true,
     setupFiles: ["./vitest.setup.ts"],
     css: false,
+    env: { NEXT_PUBLIC_API_URL: "http://api.test" },
     clearMocks: true,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
