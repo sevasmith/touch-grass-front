@@ -334,7 +334,7 @@ in US3).
   - `409` → `EMAIL_TAKEN` with `fieldErrors.email`
   - `400` → `VALIDATION`; `429` → `RATE_LIMITED`; network → `NETWORK_ERROR`
   - the result never contains tokens
-- [ ] T072 [P] [US2] Write failing tests in `src/features/auth/ui/RegisterForm.test.tsx` (mock `../api/register.action` and `next/navigation`; render with `renderWithQueryClient`):
+- [x] T072 [P] [US2] Write failing tests in `src/features/auth/ui/RegisterForm.test.tsx` (mock `../api/register.action` and `next/navigation`; render with `renderWithQueryClient`):
   - an empty submit shows three field errors
   - a 7-char password shows the length message
   - a mismatched confirm shows "Passwords don't match"
