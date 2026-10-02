@@ -21,6 +21,7 @@ export default defineConfig({
     css: false,
     env: { NEXT_PUBLIC_API_URL: "http://api.test" },
     clearMocks: true,
+    unstubGlobals: true,
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
