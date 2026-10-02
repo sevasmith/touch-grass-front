@@ -302,6 +302,11 @@ Targets resolve to `src/shared/ui/` via `components.json`.
   `shared/components/ui`). Move it to `src/shared/ui/button.tsx` (re-adding it via shadcn is
   acceptable) and update the `vitest.config.ts` coverage exclude to `src/shared/ui/**`.
 
+**Outcome (T002, 2026-10-02)**: all seven components exist in `base-nova`, so nothing was
+substituted. The CLI (`shadcn@4.21.1`) wrote `import { cn } from "cn"` into every generated file and
+installed the unrelated npm package `cn`. That package was removed (unapproved dependency) and the
+imports were restored to `@/shared/lib/utils`. Check for this after every future `shadcn add`.
+
 ## R13. `server-only` guard
 
 **Decision**: Every module that touches cookies, tokens, env secrets, or the backend starts with
