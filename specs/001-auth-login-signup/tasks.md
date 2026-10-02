@@ -154,7 +154,7 @@ the placeholder routes. Every user story depends on this phase.
   - `TokenPairSchema` requires non-empty `accessToken` and `refreshToken` strings
   - `RefreshOutcomeRecordSchema` is a discriminated union on `kind` (`ok` with `pair`, or `revoked`)
   - `RefreshOutcome` additionally allows `{ kind: "transient" }`
-- [ ] T023 Implement `src/entities/session/model/token-pair.schema.ts` and `src/entities/session/model/refresh-outcome.schema.ts`, and start the barrel `src/entities/session/index.ts` with the schemas and their types (T034 completes it)
+- [x] T023 Implement `src/entities/session/model/token-pair.schema.ts` and `src/entities/session/model/refresh-outcome.schema.ts`, and start the barrel `src/entities/session/index.ts` with the schemas and their types (T034 completes it)
 - [ ] T024 [P] Write failing tests in `src/entities/session/lib/session-cookies.test.ts`. Each function takes a cookie-store argument; test with the T005 jar:
   - `readSession(store)` returns `{ accessToken, refreshToken }` only when both `tg_at` and `tg_rt` exist, and `null` otherwise
   - `writeTokenPair(store, pair)` sets both with `httpOnly: true, sameSite: "lax", path: "/", maxAge: serverEnv.SESSION_COOKIE_MAX_AGE`, and `secure` only in production
