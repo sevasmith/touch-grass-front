@@ -144,7 +144,7 @@ the placeholder routes. Every user story depends on this phase.
 ### Entities: user
 
 - [x] T020 [P] Write failing tests in `src/entities/user/model/current-user.schema.test.ts`: `CurrentUserSchema` accepts `{ id: uuid, email, emailVerified: boolean }` and rejects a non-uuid `id`, an invalid `email`, or a missing `emailVerified`
-- [ ] T021 Implement `src/entities/user/model/current-user.schema.ts` (`CurrentUserSchema`, `CurrentUser`) and the barrel `src/entities/user/index.ts`
+- [x] T021 Implement `src/entities/user/model/current-user.schema.ts` (`CurrentUserSchema`, `CurrentUser`) and the barrel `src/entities/user/index.ts`
 - [ ] T021a [P] Write failing tests in `src/entities/user/api/get-current-user.test.ts` (T005 helpers): `getCurrentUser(accessToken)` sends `GET /auth/me` with `Authorization: Bearer <accessToken>` and returns `{ ok: true, user }`; `{ ok: false, reason: "unauthorized" }` on `401`; `{ ok: false, reason: "transient" }` on network, `5xx`, `429`, or a response that fails `CurrentUserSchema`
 - [ ] T021b Implement `src/entities/user/api/get-current-user.ts` (`import "server-only"`; built on `backendFetch` with `schema: CurrentUserSchema`; it takes the access token as an argument, so it needs nothing from `entities/session`). Add `import "server-only"` to `src/entities/user/index.ts` and export `getCurrentUser` from it (constitution II: `entities/session` must not import `entities/user`)
 
