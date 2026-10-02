@@ -328,7 +328,7 @@ in US3).
 ### Tests for User Story 2 (write first; they MUST fail) ⚠️
 
 - [x] T070 [P] [US2] Write failing tests in `src/features/auth/model/register.schema.test.ts`: `RegisterSchema` covers required email, password, and confirm; password length 7/8/72/73; a mismatch error lands on `confirmPassword`
-- [ ] T071 [P] [US2] Write failing tests in `src/features/auth/api/register.action.test.ts`:
+- [x] T071 [P] [US2] Write failing tests in `src/features/auth/api/register.action.test.ts`:
   - the request body is exactly `{ email, password }` (no `confirmPassword`)
   - `201` → `tg_at`, `tg_rt`, and `tg_code_sent_at` (≈ now) set, and `{ ok: true, redirectTo: "/verify-email" }`
   - `409` → `EMAIL_TAKEN` with `fieldErrors.email`
