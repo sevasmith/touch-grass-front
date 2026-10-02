@@ -96,7 +96,7 @@ the placeholder routes. Every user story depends on this phase.
 
 ### Shared: env, error schema, backend client
 
-- [ ] T009 [P] Write failing tests in `src/shared/config/env.server.test.ts` for `ServerEnvSchema` (call `ServerEnvSchema.parse` with hand-built objects):
+- [x] T009 [P] Write failing tests in `src/shared/config/env.server.test.ts` for `ServerEnvSchema` (call `ServerEnvSchema.parse` with hand-built objects):
   - `NEXT_PUBLIC_API_URL` must be a URL
   - `SESSION_COOKIE_MAX_AGE` is coerced to an int and defaults to `2592000`
   - on a Vercel deployment (`VERCEL: "1"` and `NEXT_PHASE` is not `"phase-production-build"`), parsing fails if `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, or `SESSION_CACHE_KEY` is missing
