@@ -291,7 +291,7 @@ scenarios 9, 10, 12, 14, 24).
   - `TOO_MANY_ATTEMPTS` renders "Too many attempts, please wait a moment"
   - `NETWORK_ERROR` leaves the form enabled for retry
 - [x] T059 [P] [US1] Write failing tests in `src/features/auth/ui/LogoutButton.test.tsx`: renders a `<form>` whose action is the `logout` Server Action and a "Log out" submit button that is disabled while pending (`useFormStatus`)
-- [ ] T060 [P] [US1] Write failing tests in `src/_pages/login/ui/LoginPage.test.tsx` (render `await LoginPage({ searchParams: Promise.resolve(…) })`; mock `LoginForm` through the barrel): `reason: "session_expired"` renders the `SESSION_EXPIRED` notice ("Your session has ended. Please log in again."); an unknown `reason`, an array value, or none renders no notice; it renders `LoginForm`, the heading "Welcome to Touch Grass", and the subtitle "Sign in to continue your journey." (Figma `1:2`)
+- [x] T060 [P] [US1] Write failing tests in `src/_pages/login/ui/LoginPage.test.tsx` (render `await LoginPage({ searchParams: Promise.resolve(…) })`; mock `LoginForm` through the barrel): `reason: "session_expired"` renders the `SESSION_EXPIRED` notice ("Your session has ended. Please log in again."); an unknown `reason`, an array value, or none renders no notice; it renders `LoginForm`, the heading "Welcome to Touch Grass", and the subtitle "Sign in to continue your journey." (Figma `1:2`)
 - [ ] T060a [P] [US1] Extend `src/_pages/map/ui/MapPage.test.tsx`: the page renders a "Log out" button (mock `LogoutButton` through the `@/features/auth` barrel)
 
 ### Implementation for User Story 1
