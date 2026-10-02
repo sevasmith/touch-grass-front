@@ -22,7 +22,7 @@ export default defineConfig({
         "src/test/**",
         "src/**/*.d.ts",
         "src/shared/types/**",
-        "src/shared/components/ui/**",
+        "src/shared/ui/**",
         "src/_app/**",
         "src/**/index.{ts,tsx}",
         "src/entities/**",
