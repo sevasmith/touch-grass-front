@@ -190,7 +190,7 @@ the placeholder routes. Every user story depends on this phase.
   - `403` with `message === "Email not verified"` → `{ ok: false, kind: "email_not_verified" }`
   - no session cookies → `session_expired` with no backend call
 - [x] T033 Implement `src/entities/session/api/authed-fetch.ts` (`import "server-only"`). Export `authedFetch<T>(path, { method, body?, schema?, isSessionFailure? })` returning `BackendResult<T> | { ok: false; kind: "session_expired" | "email_not_verified" }`, using `await cookies()` from `next/headers` (research R4)
-- [ ] T034 Complete the barrel `src/entities/session/index.ts`: add `import "server-only"` at the top and re-export `readSession`, `writeTokenPair`, `clearSession`, `writeCodeSentAt`, `readCodeSentAt`, `SESSION_COOKIES`, `refreshSession`, `authedFetch`, and `revokeSession` alongside the schemas (`getCurrentUser` is exported by `@/entities/user`, T021b). `callRefresh` stays internal, because only the coordinator uses it. Every consumer is server-side; client modules may only `import type` from this barrel
+- [x] T034 Complete the barrel `src/entities/session/index.ts`: add `import "server-only"` at the top and re-export `readSession`, `writeTokenPair`, `clearSession`, `writeCodeSentAt`, `readCodeSentAt`, `SESSION_COOKIES`, `refreshSession`, `authedFetch`, and `revokeSession` alongside the schemas (`getCurrentUser` is exported by `@/entities/user`, T021b). `callRefresh` stays internal, because only the coordinator uses it. Every consumer is server-side; client modules may only `import type` from this barrel
 
 ### Feature auth: shared error model, field schemas, client mutation wrapper, form atoms
 

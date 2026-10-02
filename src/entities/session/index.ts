@@ -1,3 +1,17 @@
+import "server-only"
+
+export { authedFetch, type AuthedResult } from "./api/authed-fetch"
+export { revokeSession } from "./api/revoke"
+export { SESSION_COOKIES } from "./config/cookies"
+export { refreshSession } from "./lib/refresh-coordinator"
+export {
+  clearSession,
+  readCodeSentAt,
+  readSession,
+  writeCodeSentAt,
+  writeTokenPair,
+  type CookieStore,
+} from "./lib/session-cookies"
 export {
   RefreshOutcomeRecordSchema,
   RefreshOutcomeSchema,
