@@ -167,7 +167,7 @@ the placeholder routes. Every user story depends on this phase.
 - [x] T028 [P] Write failing tests in `src/entities/session/api/session-api.test.ts`:
   - `callRefresh(rt)`: `POST /auth/refresh { refreshToken }`. A `200` returns `{ kind: "ok", pair }`, any `401` returns `{ kind: "revoked" }`, and `429`, `5xx`, network, or an invalid response return `{ kind: "transient" }`
   - `revokeSession(rt)`: `POST /auth/logout { refreshToken }` that resolves `void` whatever the outcome, and never throws
-- [ ] T029 Implement `src/entities/session/api/refresh.ts` and `src/entities/session/api/revoke.ts` (each `import "server-only"`, built on `backendFetch`)
+- [x] T029 Implement `src/entities/session/api/refresh.ts` and `src/entities/session/api/revoke.ts` (each `import "server-only"`, built on `backendFetch`)
 - [ ] T030 Write failing tests in `src/entities/session/lib/refresh-coordinator.test.ts`. Use the memory store, mocked `fetch`, and fake timers; cover every case in research R2 and contracts/session-and-proxy.md:
   - the winner on `200` stores the encrypted `rt:result:{sha256hex(rt)}` with a 30 s TTL and returns `ok`
   - the winner on `401` caches `revoked`
