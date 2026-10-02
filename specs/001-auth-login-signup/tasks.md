@@ -195,7 +195,7 @@ the placeholder routes. Every user story depends on this phase.
 ### Feature auth: shared error model, field schemas, client mutation wrapper, form atoms
 
 - [x] T035 [P] Write failing tests in `src/features/auth/model/auth-error.test.ts`: `AuthErrorCodeSchema` contains exactly the 25 codes in data-model §4; `AUTH_ERROR_COPY` has a non-empty string for every code (exhaustive `satisfies Record<AuthErrorCode, string>`); copy matches the "User-facing copy" column of contracts/backend-api.md
-- [ ] T036 Implement `src/features/auth/model/auth-error.ts`: `AuthErrorCodeSchema` (`z.enum`), `AuthErrorCode`, `AUTH_ERROR_COPY`, and `AuthActionResult<T extends object = { redirectTo?: Route }> = ActionResult<T, AuthErrorCode>`
+- [x] T036 Implement `src/features/auth/model/auth-error.ts`: `AuthErrorCodeSchema` (`z.enum`), `AuthErrorCode`, `AUTH_ERROR_COPY`, and `AuthActionResult<T extends object = { redirectTo?: Route }> = ActionResult<T, AuthErrorCode>`
 - [ ] T037 [P] Write failing tests in `src/features/auth/model/fields.test.ts`:
   - `EmailSchema` trims, is required, and rejects malformed addresses
   - `NewPasswordSchema` rejects 7 and 73 characters and accepts 8 and 72
