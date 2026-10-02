@@ -15,7 +15,7 @@ const NETWORK_FAILURE = { ok: false, error: "NETWORK_ERROR" } as const
 export type AuthFailure<TResult> =
   Extract<TResult, { ok: false }> | typeof NETWORK_FAILURE
 
-interface AuthMutationCallbacks<TResult> {
+export interface AuthMutationCallbacks<TResult> {
   onSuccess?: (result: Extract<TResult, { ok: true }>) => void
   onFailure?: (failure: AuthFailure<TResult>) => void
 }
