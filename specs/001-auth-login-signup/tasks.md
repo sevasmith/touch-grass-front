@@ -327,7 +327,7 @@ in US3).
 
 ### Tests for User Story 2 (write first; they MUST fail) ⚠️
 
-- [ ] T070 [P] [US2] Write failing tests in `src/features/auth/model/register.schema.test.ts`: `RegisterSchema` covers required email, password, and confirm; password length 7/8/72/73; a mismatch error lands on `confirmPassword`
+- [x] T070 [P] [US2] Write failing tests in `src/features/auth/model/register.schema.test.ts`: `RegisterSchema` covers required email, password, and confirm; password length 7/8/72/73; a mismatch error lands on `confirmPassword`
 - [ ] T071 [P] [US2] Write failing tests in `src/features/auth/api/register.action.test.ts`:
   - the request body is exactly `{ email, password }` (no `confirmPassword`)
   - `201` → `tg_at`, `tg_rt`, and `tg_code_sent_at` (≈ now) set, and `{ ok: true, redirectTo: "/verify-email" }`
@@ -345,7 +345,7 @@ in US3).
 
 ### Implementation for User Story 2
 
-- [ ] T073 [P] [US2] Implement `src/features/auth/model/register.schema.ts` (`RegisterSchema = withPasswordConfirmation(z.object({ email: EmailSchema, password: NewPasswordSchema, confirmPassword: z.string() }))`, `RegisterInput`)
+- [ ] T073 [P] [US2] Implement `src/features/auth/model/register.schema.ts` (`RegisterSchema = withPasswordConfirmation(z.object({ email: EmailSchema, password: NewPasswordSchema, confirmPassword: z.string().min(1, "Confirm your password") }))` (_as built: a required confirmation, so an empty submit shows three errors as T072 expects_), `RegisterInput`)
 - [ ] T074 [US2] Implement `src/features/auth/api/register.action.ts` (`"use server"`; contracts/server-actions.md `register` row; `writeTokenPair` + `writeCodeSentAt(store, Date.now())`; map with `mapBackendError("signup", …)`)
 - [ ] T075 [US2] Implement `src/features/auth/api/use-register.ts` (`"use client"`; `useAuthMutation(register)`)
 - [ ] T076 [US2] Implement `src/features/auth/ui/RegisterForm.tsx` (`"use client"`; mirrors `LoginForm`: `EmailField`, two `PasswordField`s with `autoComplete="new-password"`, submit label "Sign Up", `EMAIL_TAKEN` → `setError("email", …)`)
