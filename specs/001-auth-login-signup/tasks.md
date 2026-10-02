@@ -276,7 +276,7 @@ scenarios 9, 10, 12, 14, 24).
 ### Tests for User Story 1 (write first; they MUST fail) ⚠️
 
 - [x] T055 [P] [US1] Write failing tests in `src/features/auth/model/login.schema.test.ts`: `LoginSchema` requires a trimmed valid email and a non-empty password, with **no** length rule on password (data-model §3)
-- [ ] T056 [P] [US1] Write failing tests in `src/features/auth/api/login.action.test.ts` (mock `next/headers` + `fetch`):
+- [x] T056 [P] [US1] Write failing tests in `src/features/auth/api/login.action.test.ts` (mock `next/headers` + `fetch`):
   - invalid input → `{ ok: false, error: "VALIDATION", fieldErrors }` and no fetch
   - `200` → `tg_at`/`tg_rt` set, then `GET /auth/me`: `emailVerified: true` → `redirectTo: "/map"`; `false` → `"/verify-email"`; if `/auth/me` fails → `redirectTo: "/map"` (proxy re-tiers)
   - `401` → `INVALID_CREDENTIALS` with no cookies; `429` → `TOO_MANY_ATTEMPTS`; network → `NETWORK_ERROR`; a thrown error → `UNEXPECTED`
