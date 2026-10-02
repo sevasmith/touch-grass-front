@@ -217,7 +217,7 @@ the placeholder routes. Every user story depends on this phase.
   - any other failure is returned to the caller through `onFailure` without navigating
   - an action that **rejects** (offline, deployment skew "Failed to find Server Action", timeout) is logged with `console.error` and reaches `onFailure` as `{ ok: false, error: "NETWORK_ERROR" }`, with no navigation and the form usable again (constitution VIII: no silent failure)
   - the action is called exactly once per `mutate` (no retry)
-- [ ] T042 Implement `src/features/auth/api/use-auth-mutation.ts` (`"use client"`). Export `useAuthMutation(action, { onFailure?, onSuccess? })` wrapping TanStack `useMutation({ mutationFn: action, retry: 0 })` with the routing from T041 (research R8). The `mutationFn` catches a rejected action call, logs it, and resolves to `{ ok: false, error: "NETWORK_ERROR" }`
+- [x] T042 Implement `src/features/auth/api/use-auth-mutation.ts` (`"use client"`). Export `useAuthMutation(action, { onFailure?, onSuccess? })` wrapping TanStack `useMutation({ mutationFn: action, retry: 0 })` with the routing from T041 (research R8). The `mutationFn` catches a rejected action call, logs it, and resolves to `{ ok: false, error: "NETWORK_ERROR" }`
 - [ ] T043 [P] Write failing tests in `src/features/auth/ui/form-atoms.test.tsx`:
   - `FormErrorAlert` renders `AUTH_ERROR_COPY[code]` inside `role="alert"` and renders nothing without a code
   - `EmailField` and `PasswordField` render a visible `<label>` tied to the input, set `aria-invalid` and `aria-describedby` → the error text when an error is passed, and forward `autoComplete` (`email` / `current-password` / `new-password`)
@@ -307,7 +307,7 @@ scenarios 9, 10, 12, 14, 24).
   - submit `Button` per Figma: full width, `rounded-lg`, Hanken SemiBold 18/28.8, label "Log In", `Spinner` + `disabled` while pending
 - [ ] T066 [P] [US1] Implement `src/features/auth/ui/LogoutButton.tsx` (`<form action={logout}>` plus a small `"use client"` submit button using `useFormStatus`)
 - [ ] T067 [US1] Export `LoginForm`, `LogoutButton`, and `LoginSchema` from `src/features/auth/index.ts`
-- [ ] T068 [US1] Implement `src/_pages/login/model/login-params.schema.ts` (`LoginParamsSchema = z.object({ reason: z.enum(["session_expired"]).optional().catch(undefined) })`), `src/_pages/login/ui/LoginPage.tsx` (async RSC that takes `searchParams`, awaits it, and parses it with `LoginParamsSchema`; Figma heading Manrope Bold 32/38.4, subtitle Hanken 16/24, optional session-expired notice, `<LoginForm />`), `src/_pages/login/index.ts`, and the thin route `app/(auth)/login/page.tsx` (renders `<LoginPage searchParams={searchParams} />`)
+- [ ] T068 [US1] Implement `src/_pages/login/model/login-params.schema.ts` (`LoginParamsSchema = z.object({ reason: z.enum(["session_expired"]).optional().catch(undefined) })`), `src/_pages/login/ui/LoginPage.tsx` (async RSC that takes `searchParams`, awaits it, and parses it with `LoginParamsSchema`; Figma heading Manrope Bold 32/38.4, subtitle Hanken 16/24, optional session-expired notice, `<LoginForm />`), `src/_pages/login/index.ts`, and the thin route `app/(auth)/login/page.tsx` (renders `<LoginPage searchParams={searchParams} />`). Once `/login` exists, remove the `as Route` cast on `SESSION_EXPIRED_ROUTE` in `src/features/auth/api/use-auth-mutation.ts` (added in T042 because typed routes reject routes that do not exist yet)
 - [ ] T069 [US1] Render `<LogoutButton />` from `@/features/auth` in `src/_pages/map/ui/MapPage.tsx`
 
 **Checkpoint**: Quickstart scenarios 9, 10, 12, 14, and 24 pass. US1 is shippable on its own for
@@ -421,7 +421,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
   - computes `getCooldownEndsAt(…, Date.now())` (from `@/features/auth`)
   - renders a heading ("Verify your email"), an explanation, and `<VerifyEmailForm initialCooldownEndsAt={…} />`
 
-  Also create `src/_pages/verify-email/index.ts` and the thin route `app/(auth)/verify-email/page.tsx`
+  Also create `src/_pages/verify-email/index.ts` and the thin route `app/(auth)/verify-email/page.tsx`. Once `/verify-email` exists, remove the `as Route` cast on `VERIFY_EMAIL_ROUTE` in `src/features/auth/api/use-auth-mutation.ts` (T042)
 
 **Checkpoint**: Quickstart scenarios 1, 4–8, and 11 pass. The full P1 flow (signup → verify → map,
 plus login) works end to end. **This is the recommended MVP release point.**
