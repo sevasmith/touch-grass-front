@@ -245,7 +245,7 @@ the placeholder routes. Every user story depends on this phase.
 ### Widgets, routes, placeholder pages
 
 - [x] T050 [P] Write failing tests in `src/widgets/auth-shell/ui/AuthShell.test.tsx`: renders `children` in the form column; the hero `<img>` has `alt=""` and its panel has the classes `hidden lg:block`; the help icon is `aria-hidden`; the footer text is not rendered as links. Also write failing tests in `src/widgets/auth-shell/ui/AuthShellLoading.test.tsx`: it renders a spinner with an accessible name (`role="status"`) inside a fixed-height box
-- [ ] T051 Implement `src/widgets/auth-shell/ui/AuthHero.tsx`, `src/widgets/auth-shell/ui/AuthFooter.tsx`, `src/widgets/auth-shell/ui/AuthShell.tsx`, `src/widgets/auth-shell/ui/AuthShellLoading.tsx` (shadcn `Spinner` centred in a fixed-height box, so no layout shift occurs), and `src/widgets/auth-shell/index.ts` (exports `AuthShell` and `AuthShellLoading`) per research R11 and Figma `1:2`:
+- [x] T051 Implement `src/widgets/auth-shell/ui/AuthHero.tsx`, `src/widgets/auth-shell/ui/AuthFooter.tsx`, `src/widgets/auth-shell/ui/AuthShell.tsx`, `src/widgets/auth-shell/ui/AuthShellLoading.tsx` (shadcn `Spinner` centred in a fixed-height box, so no layout shift occurs), and `src/widgets/auth-shell/index.ts` (exports `AuthShell` and `AuthShellLoading`) per research R11 and Figma `1:2`:
   - two equal columns at `lg`; hero via `next/image` with `priority` and `fill` inside a fixed box with `bg-hero-fallback` (no CLS)
   - hero title Manrope SemiBold 80/100, white, `[text-shadow:0_2px_4px_#0003]`
   - form column centred `max-w-[440px]`, `p-20` at `lg`, `px-4` on mobile
