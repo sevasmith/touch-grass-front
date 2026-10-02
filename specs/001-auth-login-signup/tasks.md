@@ -281,7 +281,7 @@ scenarios 9, 10, 12, 14, 24).
   - `200` → `tg_at`/`tg_rt` set, then `GET /auth/me`: `emailVerified: true` → `redirectTo: "/map"`; `false` → `"/verify-email"`; if `/auth/me` fails → `redirectTo: "/map"` (proxy re-tiers)
   - `401` → `INVALID_CREDENTIALS` with no cookies; `429` → `TOO_MANY_ATTEMPTS`; network → `NETWORK_ERROR`; a thrown error → `UNEXPECTED`
   - `JSON.stringify(result)` never contains either token
-- [ ] T057 [P] [US1] Write failing tests in `src/features/auth/api/logout.action.test.ts`: sends `POST /auth/logout { refreshToken }` with the cookie value; deletes `tg_at`, `tg_rt`, and `tg_code_sent_at` even when the backend returns `500` or the network fails; calls `redirect("/login")` (mock `next/navigation`); with no session it skips the backend call and still clears and redirects
+- [x] T057 [P] [US1] Write failing tests in `src/features/auth/api/logout.action.test.ts`: sends `POST /auth/logout { refreshToken }` with the cookie value; deletes `tg_at`, `tg_rt`, and `tg_code_sent_at` even when the backend returns `500` or the network fails; calls `redirect("/login")` (mock `next/navigation`); with no session it skips the backend call and still clears and redirects
 - [ ] T058 [P] [US1] Write failing tests in `src/features/auth/ui/LoginForm.test.tsx` (mock `../api/login.action` and `next/navigation`; render with `renderWithQueryClient`):
   - an empty submit shows errors on both fields and does not call the action
   - an invalid email shows an error on blur
