@@ -1,0 +1,137 @@
+import { NextResponse, type NextRequest } from "next/server"
+
+import {
+  clearSession,
+  readSession,
+  refreshSession,
+  writeTokenPair,
+  type CookieStore,
+  type TokenPair,
+} from "@/entities/session"
+import { getCurrentUser, type CurrentUser } from "@/entities/user"
+
+import { getRouteTier, normalisePathname } from "./route-tiers"
+
+// Tier routing and session refresh on every navigation (contracts/session-and-proxy.md). These
+// redirects are optimistic: the backend's guards stay the real authorization.
+
+const AUTH_ENTRY_ROUTES = new Set(["/login", "/register"])
+
+type Resolution =
+  | { kind: "ok"; user: CurrentUser; pair?: TokenPair }
+  | { kind: "transient"; pair?: TokenPair }
+  | { kind: "revoked" }
+
+/** What to do with the session cookies on both the response and the forwarded request. */
+type CookieEffect = { pair?: TokenPair } | { clear: true }
+
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  if (request.method !== "GET" || request.headers.has("next-action")) {
+    return NextResponse.next()
+  }
+
+  const { pathname } = request.nextUrl
+  const tier = getRouteTier(pathname)
+  const session = readSession(forwardedCookies(request))
+
+  if (tier === "public") {
+    if (!session || !AUTH_ENTRY_ROUTES.has(normalisePathname(pathname))) {
+      return NextResponse.next()
+    }
+    const resolution = await resolveMe(session)
+    switch (resolution.kind) {
+      case "ok":
+        return respond(request, resolution, () =>
+          redirectTo(
+            request,
+            resolution.user.emailVerified ? "/map" : "/verify-email"
+          )
+        )
+      case "revoked":
+        return respond(request, { clear: true }, () => passThrough(request))
+      case "transient":
+        return respond(request, resolution, () => passThrough(request))
+    }
+  }
+
+  if (!session) return redirectTo(request, "/login")
+
+  const resolution = await resolveMe(session)
+  switch (resolution.kind) {
+    case "revoked":
+      return respond(request, { clear: true }, () =>
+        redirectTo(request, "/login?reason=session_expired")
+      )
+    case "transient":
+      return respond(request, resolution, () =>
+        NextResponse.rewrite(new URL("/session-unavailable", request.url))
+      )
+    case "ok": {
+      const { emailVerified } = resolution.user
+      if (tier === "verified" && !emailVerified) {
+        return respond(request, resolution, () =>
+          redirectTo(request, "/verify-email")
+        )
+      }
+      if (tier === "unverified" && emailVerified) {
+        return respond(request, resolution, () => redirectTo(request, "/map"))
+      }
+      return respond(request, resolution, () => passThrough(request))
+    }
+  }
+}
+
+/** `GET /auth/me`; on a 401, one coordinated refresh and one retry with the new token. */
+async function resolveMe(session: TokenPair): Promise<Resolution> {
+  const first = await getCurrentUser(session.accessToken)
+  if (first.ok) return { kind: "ok", user: first.user }
+  if (first.reason === "transient") return { kind: "transient" }
+
+  const refreshed = await refreshSession(session.refreshToken)
+  if (refreshed.kind !== "ok") return refreshed
+
+  // From here on the old refresh token is dead, so the new pair must reach the browser
+  // whatever /auth/me says next (unless the session turns out to be revoked).
+  const { pair } = refreshed
+  const retry = await getCurrentUser(pair.accessToken)
+  if (retry.ok) return { kind: "ok", user: retry.user, pair }
+  if (retry.reason === "transient") return { kind: "transient", pair }
+  return { kind: "revoked" }
+}
+
+/**
+ * Applies the cookie effect to the forwarded request first (so the RSC render in this same
+ * request reads the new pair), then builds the response and applies it there too.
+ */
+function respond(
+  request: NextRequest,
+  effect: CookieEffect,
+  build: () => NextResponse
+): NextResponse {
+  applyEffect(forwardedCookies(request), effect)
+  const response = build()
+  applyEffect(response.cookies, effect)
+  return response
+}
+
+function applyEffect(store: CookieStore, effect: CookieEffect): void {
+  if ("clear" in effect) clearSession(store)
+  else if (effect.pair) writeTokenPair(store, effect.pair)
+}
+
+/** `NextRequest.cookies` ignores cookie options, so it needs a thin adapter (see T025). */
+function forwardedCookies(request: NextRequest): CookieStore {
+  return {
+    get: (name) => request.cookies.get(name),
+    set: (name, value) => request.cookies.set(name, value),
+    delete: ({ name }) => request.cookies.delete(name),
+  }
+}
+
+function passThrough(request: NextRequest): NextResponse {
+  return NextResponse.next({ request: { headers: request.headers } })
+}
+
+function redirectTo(request: NextRequest, path: string): NextResponse {
+  return NextResponse.redirect(new URL(path, request.url))
+}

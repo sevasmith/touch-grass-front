@@ -16,9 +16,13 @@ export const ROUTE_TIERS: Readonly<
   "/verify-email": "unverified",
 }
 
+/** Drops trailing slashes, except for the root path. */
+export function normalisePathname(pathname: string): string {
+  return pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname
+}
+
 export function getRouteTier(pathname: string): RouteTier {
-  const normalised =
-    pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname
+  const normalised = normalisePathname(pathname)
   return Object.hasOwn(ROUTE_TIERS, normalised)
     ? ROUTE_TIERS[normalised]
     : "verified"
