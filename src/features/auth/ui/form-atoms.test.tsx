@@ -23,11 +23,22 @@ describe("FormErrorAlert", () => {
 })
 
 describe.each([
-  ["EmailField", EmailField, "Email", "email"],
-  ["PasswordField", PasswordField, "Password", "current-password"],
-] as const)("%s", (_, Field, label, autoComplete) => {
+  {
+    name: "EmailField",
+    label: "Email",
+    autoComplete: "email",
+    renderField: (error?: string) => render(<EmailField error={error} />),
+  },
+  {
+    name: "PasswordField",
+    label: "Password",
+    autoComplete: "current-password",
+    renderField: (error?: string) =>
+      render(<PasswordField autoComplete="current-password" error={error} />),
+  },
+])("$name", ({ label, autoComplete, renderField }) => {
   it("has a visible label tied to the input", () => {
-    render(<Field autoComplete={autoComplete} />)
+    renderField()
 
     const input = screen.getByLabelText(label)
     expect(input.tagName).toBe("INPUT")
@@ -35,7 +46,7 @@ describe.each([
   })
 
   it("forwards autoComplete", () => {
-    render(<Field autoComplete={autoComplete} />)
+    renderField()
 
     expect(screen.getByLabelText(label)).toHaveAttribute(
       "autocomplete",
@@ -44,7 +55,7 @@ describe.each([
   })
 
   it("is valid and undescribed without an error", () => {
-    render(<Field autoComplete={autoComplete} />)
+    renderField()
 
     const input = screen.getByLabelText(label)
     expect(input).not.toHaveAttribute("aria-invalid", "true")
@@ -52,7 +63,7 @@ describe.each([
   })
 
   it("sets aria-invalid and aria-describedby to the error text", () => {
-    render(<Field autoComplete={autoComplete} error="Something is wrong" />)
+    renderField("Something is wrong")
 
     const input = screen.getByLabelText(label)
     expect(input).toHaveAttribute("aria-invalid", "true")
