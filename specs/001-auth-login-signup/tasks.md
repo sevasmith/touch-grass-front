@@ -229,7 +229,7 @@ the placeholder routes. Every user story depends on this phase.
 - [x] T045 Create `src/_app/providers/QueryProvider.tsx` (`"use client"`; a `QueryClient` created in `useState`, `defaultOptions.mutations.retry: 0`) and `src/_app/providers/index.ts` (exports `Providers`). Wrap `{children}` in `app/layout.tsx` with `<Providers>`
 - [x] T046 [P] Write failing tests in `src/_app/proxy/route-tiers.test.ts`: `getRouteTier(pathname)` returns `public` for `/login`, `/register`, `/forgot-password`, `/reset-password`, `/oauth/complete`, and `/session-unavailable`; `unverified` for `/verify-email`; `verified` for `/map`, `/`, and any unknown path; trailing slashes are normalised
 - [x] T047 Implement `src/_app/proxy/route-tiers.ts` (`ROUTE_TIERS: Record<string, "public" | "unverified">` listing only the looser routes, and `getRouteTier`, which defaults to `"verified"`; data-model §6)
-- [ ] T048 Write failing tests in `src/_app/proxy/proxy.test.ts`. Build requests with `new NextRequest(url, { headers: { cookie } })` and use mocked `fetch` plus the memory KV. Cover every branch of the proxy algorithm in contracts/session-and-proxy.md:
+- [x] T048 Write failing tests in `src/_app/proxy/proxy.test.ts`. Build requests with `new NextRequest(url, { headers: { cookie } })` and use mocked `fetch` plus the memory KV. Cover every branch of the proxy algorithm in contracts/session-and-proxy.md:
   - a non-GET request, or one with a `Next-Action` header, passes through
   - public non-auth routes pass through with no backend call
   - `/login` or `/register` with a session: verified → redirect `/map`; unverified → redirect `/verify-email`; revoked → cookies deleted and pass through; transient → pass through
