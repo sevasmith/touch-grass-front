@@ -1,5 +1,6 @@
 import { AUTH_ERROR_COPY, LoginForm } from "@/features/auth"
 import { Alert, AlertDescription } from "@/shared/ui/alert"
+import { AuthPageHeader } from "@/widgets/auth-shell"
 
 import { LoginParamsSchema } from "../model/login-params.schema"
 
@@ -12,14 +13,10 @@ export async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <div className="flex flex-col gap-12">
-      <header className="flex flex-col gap-3">
-        <h1 className="font-heading text-heading font-bold text-foreground">
-          Welcome to Touch Grass
-        </h1>
-        <p className="text-base text-muted-foreground">
-          Sign in to continue your journey.
-        </p>
-      </header>
+      <AuthPageHeader
+        title="Welcome to Touch Grass"
+        subtitle="Sign in to continue your journey."
+      />
       {reason === "session_expired" ? (
         <Alert>
           <AlertDescription className="text-foreground">

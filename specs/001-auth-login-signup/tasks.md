@@ -349,7 +349,7 @@ in US3).
 - [x] T074 [US2] Implement `src/features/auth/api/register.action.ts` (`"use server"`; contracts/server-actions.md `register` row; `writeTokenPair` + `writeCodeSentAt(store, Date.now())`; map with `mapBackendError("signup", …)`)
 - [x] T075 [US2] Implement `src/features/auth/api/use-register.ts` (`"use client"`; `useAuthMutation(register)`)
 - [x] T076 [US2] Implement `src/features/auth/ui/RegisterForm.tsx` (`"use client"`; mirrors `LoginForm`: `EmailField`, two `PasswordField`s with `autoComplete="new-password"`, submit label "Sign Up", `EMAIL_TAKEN` → `setError("email", …)`)
-- [ ] T077 [US2] Export `RegisterForm` from `src/features/auth/index.ts`. Implement `src/_pages/register/ui/RegisterPage.tsx` (RSC; heading "Join Touch Grass" and subtitle "Create an account to start your journey." in the login page's typography and layout; `<RegisterForm />`), `src/_pages/register/index.ts`, and the thin route `app/(auth)/register/page.tsx`
+- [x] T077 [US2] Export `RegisterForm` from `src/features/auth/index.ts`. Implement `src/_pages/register/ui/RegisterPage.tsx` (RSC; heading "Join Touch Grass" and subtitle "Create an account to start your journey." in the login page's typography and layout; `<RegisterForm />`), `src/_pages/register/index.ts`, and the thin route `app/(auth)/register/page.tsx`
 
 **Checkpoint**: Quickstart scenarios 1–3 pass (the redirect target `/verify-email` renders once US3
 lands).
