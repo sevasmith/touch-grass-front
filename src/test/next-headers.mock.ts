@@ -22,6 +22,8 @@ export class CookieJar {
   readonly setCalls: CookieSetCall[] = []
   /** Every cookie name passed to `delete`, in order. */
   readonly deleteCalls: string[] = []
+  /** The options of every `delete({ name, path })` call, in order. */
+  readonly deleteOptions: { name: string; path?: string }[] = []
 
   get(name: string): StoredCookie | undefined {
     return this.store.get(name)
@@ -48,9 +50,11 @@ export class CookieJar {
     return this
   }
 
-  delete(name: string): this {
-    this.deleteCalls.push(name)
-    this.store.delete(name)
+  delete(target: string | { name: string; path?: string }): this {
+    const options = typeof target === "string" ? { name: target } : target
+    this.deleteCalls.push(options.name)
+    this.deleteOptions.push(options)
+    this.store.delete(options.name)
     return this
   }
 
@@ -71,6 +75,7 @@ export class CookieJar {
     this.store.clear()
     this.setCalls.length = 0
     this.deleteCalls.length = 0
+    this.deleteOptions.length = 0
   }
 }
 

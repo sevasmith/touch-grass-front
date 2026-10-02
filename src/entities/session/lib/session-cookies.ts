@@ -19,7 +19,7 @@ type CookieOptions = ReturnType<typeof sessionCookieOptions>
 export interface CookieStore {
   get(name: string): { value: string } | undefined
   set(name: string, value: string, options?: CookieOptions): unknown
-  delete(name: string): unknown
+  delete(options: { name: string; path: string }): unknown
 }
 
 export function readSession(store: CookieStore): TokenPair | null {
@@ -35,10 +35,11 @@ export function writeTokenPair(store: CookieStore, pair: TokenPair): void {
   store.set(SESSION_COOKIES.refresh, pair.refreshToken, options)
 }
 
+/** Deletes with `path: "/"`, matching how the cookies were set, whatever the current route. */
 export function clearSession(store: CookieStore): void {
-  store.delete(SESSION_COOKIES.access)
-  store.delete(SESSION_COOKIES.refresh)
-  store.delete(SESSION_COOKIES.codeSentAt)
+  for (const name of Object.values(SESSION_COOKIES)) {
+    store.delete({ name, path: "/" })
+  }
 }
 
 export function writeCodeSentAt(store: CookieStore, nowMs: number): void {

@@ -98,6 +98,16 @@ describe("clearSession", () => {
     ])
     expect(jar.getAll()).toEqual([{ name: "other", value: "x" }])
   })
+
+  it('deletes with path "/" so a nested route still clears the root cookies', () => {
+    clearSession(jar)
+
+    expect(jar.deleteOptions).toEqual([
+      { name: "tg_at", path: "/" },
+      { name: "tg_rt", path: "/" },
+      { name: "tg_code_sent_at", path: "/" },
+    ])
+  })
 })
 
 describe("code-sent-at cookie", () => {
