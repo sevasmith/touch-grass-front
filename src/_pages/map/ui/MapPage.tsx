@@ -4,9 +4,7 @@ import { LogoutButton } from "@/features/auth"
 export function MapPage() {
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-4">
-      <h1 className="font-heading text-[32px] leading-[38.4px] font-bold">
-        Map coming soon
-      </h1>
+      <h1 className="font-heading text-heading font-bold">Map coming soon</h1>
       <LogoutButton />
     </main>
   )

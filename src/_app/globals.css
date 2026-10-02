@@ -51,6 +51,14 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Figma 1:2 type and layout scale (research R11). */
+@theme {
+  --text-heading: 2rem;
+  --text-heading--line-height: 2.4rem;
+  --tracking-label: 1.2px;
+  --container-auth: 440px;
+}
+
 :root {
   --background: #faf9f7;
   --foreground: #1a1c1b;

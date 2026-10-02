@@ -8,7 +8,7 @@ export function RouteErrorFallback({ reset }: { reset: () => void }) {
     <main className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div
         role="alert"
-        className="flex max-w-[440px] flex-col items-center gap-6 text-center"
+        className="flex max-w-auth flex-col items-center gap-6 text-center"
       >
         <p className="text-base text-muted-foreground">
           Something went wrong. Please try again.

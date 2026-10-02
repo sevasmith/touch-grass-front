@@ -29,7 +29,7 @@ export function AuthTextField({
       <div className="flex items-center justify-between gap-2">
         <FieldLabel
           htmlFor={inputId}
-          className="text-xs leading-3 font-semibold tracking-[1.2px] text-muted-foreground"
+          className="text-xs leading-3 font-semibold tracking-label text-muted-foreground"
         >
           {label}
         </FieldLabel>

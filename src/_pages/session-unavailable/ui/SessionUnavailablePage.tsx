@@ -6,8 +6,8 @@ import { RetryButton } from "./RetryButton"
 export function SessionUnavailablePage() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-4">
-      <div className="flex max-w-[440px] flex-col items-center gap-6 text-center">
-        <h1 className="font-heading text-[32px] leading-[38.4px] font-bold">
+      <div className="flex max-w-auth flex-col items-center gap-6 text-center">
+        <h1 className="font-heading text-heading font-bold">
           We can&apos;t check your session right now
         </h1>
         <p className="text-base text-muted-foreground">

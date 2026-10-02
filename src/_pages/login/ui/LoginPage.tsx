@@ -13,7 +13,7 @@ export async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <div className="flex flex-col gap-12">
       <header className="flex flex-col gap-3">
-        <h1 className="font-heading text-[32px] leading-[38.4px] font-bold text-foreground">
+        <h1 className="font-heading text-heading font-bold text-foreground">
           Welcome to Touch Grass
         </h1>
         <p className="text-base text-muted-foreground">
