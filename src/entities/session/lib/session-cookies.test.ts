@@ -1,5 +1,15 @@
 // @vitest-environment node
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type { cookies } from "next/headers"
+import type { NextResponse } from "next/server"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  expectTypeOf,
+  it,
+  vi,
+} from "vitest"
 
 import { CookieJar } from "@/test/next-headers.mock"
 
@@ -9,6 +19,7 @@ import {
   readSession,
   writeCodeSentAt,
   writeTokenPair,
+  type CookieStore,
 } from "./session-cookies"
 
 let jar: CookieJar
@@ -30,7 +41,7 @@ describe("readSession", () => {
     })
   })
 
-  it.each([
+  it.each<Record<string, string>>([
     {},
     { tg_at: "at-1" },
     { tg_rt: "rt-1" },
@@ -121,5 +132,12 @@ describe("code-sent-at cookie", () => {
 
   it("readCodeSentAt returns null without the cookie", () => {
     expect(readCodeSentAt(jar)).toBeNull()
+  })
+})
+
+describe("CookieStore", () => {
+  it("is satisfied by every Next cookie API the helpers are called with", () => {
+    expectTypeOf<Awaited<ReturnType<typeof cookies>>>().toExtend<CookieStore>()
+    expectTypeOf<NextResponse["cookies"]>().toExtend<CookieStore>()
   })
 })
