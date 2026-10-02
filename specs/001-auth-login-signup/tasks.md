@@ -112,7 +112,7 @@ the placeholder routes. Every user story depends on this phase.
   - it rejects a `statusCode` outside 400–599
   - `parseApiError(status, body)` returns `{ statusCode: status, message: "", error: "Unknown" }` for an unparseable body and never throws
 - [x] T012 Implement `src/shared/api/api-error.schema.ts` (`ApiErrorSchema`, `ApiError`, `parseApiError`), and `src/shared/api/action-result.ts` with a generic, domain-agnostic `ActionResult<TSuccess extends object = { redirectTo?: Route }, TError extends string = string>` = `({ ok: true } & TSuccess) | { ok: false; error: TError; fieldErrors?: Partial<Record<string, string>> }` (data-model §4; `Route` from `next`)
-- [ ] T013 Write failing tests in `src/shared/api/backend-fetch.test.ts` using T005 helpers. Requests:
+- [x] T013 Write failing tests in `src/shared/api/backend-fetch.test.ts` using T005 helpers. Requests:
   - the URL is `serverEnv.NEXT_PUBLIC_API_URL + path`
   - a JSON body is sent with `content-type: application/json`
   - an optional `accessToken` becomes `Authorization: Bearer …`
