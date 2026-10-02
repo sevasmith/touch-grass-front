@@ -1,13 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
 
 import { useLogin } from "../api/use-login"
-import type { AuthErrorCode } from "../model/auth-error"
 import { LoginSchema } from "../model/login.schema"
+import { useFormFailure } from "../model/use-form-failure"
 import { EmailField } from "./EmailField"
 import { FormErrorAlert } from "./FormErrorAlert"
 import { PasswordField } from "./PasswordField"
@@ -16,7 +15,6 @@ import { SubmitButton } from "./SubmitButton"
 type LoginValues = z.input<typeof LoginSchema>
 
 export function LoginForm() {
-  const [formError, setFormError] = useState<AuthErrorCode | null>(null)
   const form = useForm<LoginValues, unknown, z.output<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     mode: "onTouched",
@@ -24,21 +22,14 @@ export function LoginForm() {
   })
   const { errors } = form.formState
 
-  const mutation = useLogin({
-    onFailure: (failure) => {
-      setFormError(failure.error)
-      if (!("fieldErrors" in failure)) return
-      for (const [field, message] of Object.entries(
-        failure.fieldErrors ?? {}
-      )) {
-        if (field === "email" || field === "password")
-          form.setError(field, { message })
-      }
-    },
-  })
+  const { formError, onFailure, clearFormError } = useFormFailure(
+    form.setError,
+    ["email", "password"]
+  )
+  const mutation = useLogin({ onFailure })
 
   const onSubmit = form.handleSubmit((values) => {
-    setFormError(null)
+    clearFormError()
     mutation.mutate(values)
   })
 
