@@ -306,7 +306,7 @@ scenarios 9, 10, 12, 14, 24).
   - map `fieldErrors` → `setError`
   - submit `Button` per Figma: full width, `rounded-lg`, Hanken SemiBold 18/28.8, label "Log In", `Spinner` + `disabled` while pending
 - [x] T066 [P] [US1] Implement `src/features/auth/ui/LogoutButton.tsx` (`<form action={logout}>` plus a small `"use client"` submit button using `useFormStatus`)
-- [ ] T067 [US1] Export `LoginForm`, `LogoutButton`, and `LoginSchema` from `src/features/auth/index.ts`
+- [x] T067 [US1] Export `LoginForm`, `LogoutButton`, and `LoginSchema` from `src/features/auth/index.ts`
 - [ ] T068 [US1] Implement `src/_pages/login/model/login-params.schema.ts` (`LoginParamsSchema = z.object({ reason: z.enum(["session_expired"]).optional().catch(undefined) })`), `src/_pages/login/ui/LoginPage.tsx` (async RSC that takes `searchParams`, awaits it, and parses it with `LoginParamsSchema`; Figma heading Manrope Bold 32/38.4, subtitle Hanken 16/24, optional session-expired notice, `<LoginForm />`), `src/_pages/login/index.ts`, and the thin route `app/(auth)/login/page.tsx` (renders `<LoginPage searchParams={searchParams} />`). Once `/login` exists, remove the `as Route` casts on `AUTH_ROUTES.login` and `AUTH_ROUTES.sessionExpired` in `src/features/auth/config/routes.ts` (added in T042 because typed routes reject routes that do not exist yet)
 - [ ] T069 [US1] Render `<LogoutButton />` from `@/features/auth` in `src/_pages/map/ui/MapPage.tsx`
 
