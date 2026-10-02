@@ -107,7 +107,7 @@ the placeholder routes. Every user story depends on this phase.
   Also write failing tests in `src/shared/config/env.public.test.ts` for `PublicEnvSchema` (URL required)
 
 - [x] T010 Implement `src/shared/config/env.server.ts` (`import "server-only"`; export `ServerEnvSchema`, which reads `VERCEL` and `NEXT_PHASE` and applies the T009 rules in a `superRefine`, and `serverEnv = ServerEnvSchema.parse(process.env)`, so a misconfigured Vercel deployment fails on its first request while `next build` and local runs need no secrets) and `src/shared/config/env.public.ts` (export `PublicEnvSchema` and `publicEnv = PublicEnvSchema.parse({ NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL })`; the literal reference lets Next inline it). Variables per research R14
-- [ ] T011 [P] Write failing tests in `src/shared/api/api-error.schema.test.ts`:
+- [x] T011 [P] Write failing tests in `src/shared/api/api-error.schema.test.ts`:
   - `ApiErrorSchema` accepts a `message` that is a `string` or a `string[]`
   - it rejects a `statusCode` outside 400–599
   - `parseApiError(status, body)` returns `{ statusCode: status, message: "", error: "Unknown" }` for an unparseable body and never throws
