@@ -150,7 +150,7 @@ the placeholder routes. Every user story depends on this phase.
 
 ### Entities: session (cookies, crypto, refresh coordinator, authed fetch)
 
-- [ ] T022 [P] Write failing tests in `src/entities/session/model/session-schemas.test.ts`:
+- [x] T022 [P] Write failing tests in `src/entities/session/model/session-schemas.test.ts`:
   - `TokenPairSchema` requires non-empty `accessToken` and `refreshToken` strings
   - `RefreshOutcomeRecordSchema` is a discriminated union on `kind` (`ok` with `pair`, or `revoked`)
   - `RefreshOutcome` additionally allows `{ kind: "transient" }`
