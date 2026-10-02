@@ -251,7 +251,7 @@ the placeholder routes. Every user story depends on this phase.
   - form column centred `max-w-[440px]`, `p-20` at `lg`, `px-4` on mobile
   - footer pinned to the bottom of the right panel
   - static help icon from `/icons/help.svg`
-- [ ] T052 Create `app/(auth)/layout.tsx` (renders `<AuthShell>{children}</AuthShell>` from `@/widgets/auth-shell`) and `app/(auth)/loading.tsx` (renders `<AuthShellLoading />` from `@/widgets/auth-shell`)
+- [x] T052 Create `app/(auth)/layout.tsx` (renders `<AuthShell>{children}</AuthShell>` from `@/widgets/auth-shell`) and `app/(auth)/loading.tsx` (renders `<AuthShellLoading />` from `@/widgets/auth-shell`)
 - [ ] T052a [P] Write failing tests in `src/_pages/session-unavailable/ui/SessionUnavailablePage.test.tsx` and `src/_pages/session-unavailable/ui/RetryButton.test.tsx`: the page renders a heading and the `NETWORK_ERROR` copy from `AUTH_ERROR_COPY`; the Retry button calls `window.location.reload()` once per click (spy on it)
 - [ ] T053 Create `src/_pages/session-unavailable/ui/SessionUnavailablePage.tsx` (RSC: heading plus the `NETWORK_ERROR` copy from `AUTH_ERROR_COPY` via `@/features/auth`), `src/_pages/session-unavailable/ui/RetryButton.tsx` (`"use client"`; `window.location.reload()`), `src/_pages/session-unavailable/index.ts`, and the thin route `app/session-unavailable/page.tsx`
 - [ ] T053a [P] Write failing tests in `src/_pages/map/ui/MapPage.test.tsx` (the "Map coming soon" heading; no backend call) and `src/shared/ui/route-error-fallback.test.tsx` (`RouteErrorFallback` shows a generic message in `role="alert"`, and its Retry button calls the `reset` prop)
