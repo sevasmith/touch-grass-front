@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Hanken_Grotesk, Manrope } from "next/font/google"
 
+import { Providers } from "@/_app/providers"
 import { cn } from "@/shared/lib/utils"
 
 import "@/_app/globals.css"
@@ -37,7 +38,7 @@ export default function RootLayout({
       )}
     >
       <body className="flex min-h-full flex-col bg-background font-sans text-foreground">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
