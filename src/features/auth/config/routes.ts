@@ -5,7 +5,6 @@ export const AUTH_ROUTES = {
   map: "/map",
   // TODO(T091): drop the cast once the /verify-email route exists (typed routes reject it until then).
   verifyEmail: "/verify-email" as Route,
-  // TODO(T068): drop these casts once the /login route exists.
-  login: "/login" as Route,
-  sessionExpired: "/login?reason=session_expired" as Route,
+  login: "/login",
+  sessionExpired: "/login?reason=session_expired",
 } as const satisfies Record<string, Route>
