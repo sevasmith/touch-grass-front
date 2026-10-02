@@ -341,7 +341,7 @@ in US3).
   - `EMAIL_TAKEN` shows its copy on the email field
   - while pending the button is disabled with a spinner
   - a valid submit calls the action once with the form values
-- [ ] T072a [P] [US2] Write failing tests in `src/_pages/register/ui/RegisterPage.test.tsx` (mock `RegisterForm` through the barrel): it renders the heading "Join Touch Grass", the subtitle "Create an account to start your journey." (spec Assumptions), and `RegisterForm`
+- [x] T072a [P] [US2] Write failing tests in `src/_pages/register/ui/RegisterPage.test.tsx` (mock `RegisterForm` through the barrel): it renders the heading "Join Touch Grass", the subtitle "Create an account to start your journey." (spec Assumptions), and `RegisterForm`
 
 ### Implementation for User Story 2
 
