@@ -34,51 +34,67 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   const tier = getRouteTier(pathname)
   const session = readSession(forwardedCookies(request))
 
-  if (tier === "public") {
-    if (!session || !AUTH_ENTRY_ROUTES.has(normalisePathname(pathname))) {
-      return NextResponse.next()
-    }
-    const resolution = await resolveMe(session)
-    switch (resolution.kind) {
-      case "ok":
-        return respond(request, resolution, () =>
-          redirectTo(
-            request,
-            resolution.user.emailVerified ? "/map" : "/verify-email"
-          )
-        )
-      case "revoked":
-        return respond(request, { clear: true }, () => passThrough(request))
-      case "transient":
-        return respond(request, resolution, () => passThrough(request))
-    }
-  }
-
+  if (tier === "public") return handlePublicRoute(request, pathname, session)
   if (!session) return redirectTo(request, "/login")
+  return handleProtectedRoute(request, tier, await resolveMe(session))
+}
+
+/** Public routes pass through; only /login and /register bounce an existing session. */
+async function handlePublicRoute(
+  request: NextRequest,
+  pathname: string,
+  session: TokenPair | null
+): Promise<NextResponse> {
+  if (!session || !AUTH_ENTRY_ROUTES.has(normalisePathname(pathname))) {
+    return NextResponse.next()
+  }
 
   const resolution = await resolveMe(session)
-  switch (resolution.kind) {
-    case "revoked":
-      return respond(request, { clear: true }, () =>
-        redirectTo(request, "/login?reason=session_expired")
-      )
-    case "transient":
-      return respond(request, resolution, () =>
-        NextResponse.rewrite(new URL("/session-unavailable", request.url))
-      )
-    case "ok": {
-      const { emailVerified } = resolution.user
-      if (tier === "verified" && !emailVerified) {
-        return respond(request, resolution, () =>
-          redirectTo(request, "/verify-email")
-        )
-      }
-      if (tier === "unverified" && emailVerified) {
-        return respond(request, resolution, () => redirectTo(request, "/map"))
-      }
-      return respond(request, resolution, () => passThrough(request))
-    }
+  if (resolution.kind === "revoked") {
+    return respond(request, { clear: true }, () => passThrough(request))
   }
+  if (resolution.kind === "transient") {
+    // The login page stays usable when the session can't be checked.
+    return respond(request, resolution, () => passThrough(request))
+  }
+  return respond(request, resolution, () =>
+    redirectTo(
+      request,
+      resolution.user.emailVerified ? "/map" : "/verify-email"
+    )
+  )
+}
+
+function handleProtectedRoute(
+  request: NextRequest,
+  tier: "verified" | "unverified",
+  resolution: Resolution
+): NextResponse {
+  if (resolution.kind === "revoked") {
+    return respond(request, { clear: true }, () =>
+      redirectTo(request, "/login?reason=session_expired")
+    )
+  }
+  if (resolution.kind === "transient") {
+    // Keep the URL and the session; the page offers a retry.
+    return respond(request, resolution, () =>
+      NextResponse.rewrite(new URL("/session-unavailable", request.url))
+    )
+  }
+
+  const target = tierRedirect(tier, resolution.user)
+  return respond(request, resolution, () =>
+    target ? redirectTo(request, target) : passThrough(request)
+  )
+}
+
+function tierRedirect(
+  tier: "verified" | "unverified",
+  user: CurrentUser
+): string | null {
+  if (tier === "verified" && !user.emailVerified) return "/verify-email"
+  if (tier === "unverified" && user.emailVerified) return "/map"
+  return null
 }
 
 /** `GET /auth/me`; on a 401, one coordinated refresh and one retry with the new token. */

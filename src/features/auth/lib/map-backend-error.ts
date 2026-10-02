@@ -42,6 +42,34 @@ export type AuthEndpoint =
   | "reset-password"
   | "oauth-exchange"
 
+/** A fixed code, or one chosen by the exact backend message with an optional fallback. */
+type Rule =
+  | AuthErrorCode
+  | { byMessage: ReadonlyMap<string, AuthErrorCode>; otherwise?: AuthErrorCode }
+
+/** Endpoint-specific rows of the error-mapping table; anything else falls through to the common rows. */
+const ENDPOINT_RULES: Record<AuthEndpoint, Partial<Record<number, Rule>>> = {
+  login: { 401: "INVALID_CREDENTIALS", 429: "TOO_MANY_ATTEMPTS" },
+  signup: { 409: "EMAIL_TAKEN" },
+  "verify-email": {
+    401: { byMessage: VERIFY_CODE_ERRORS, otherwise: "SESSION_EXPIRED" },
+    429: "TOO_MANY_ATTEMPTS",
+  },
+  "resend-verification": {
+    429: {
+      byMessage: new Map([
+        [BACKEND_MESSAGES.resendCooldown, "RESEND_COOLDOWN"],
+      ]),
+    },
+    503: "EMAIL_SEND_FAILED",
+  },
+  "forgot-password": {},
+  "reset-password": {
+    401: { byMessage: RESET_ERRORS, otherwise: "RESET_INVALID" },
+  },
+  "oauth-exchange": { 401: "OAUTH_FAILED", 429: "OAUTH_RATE_LIMITED" },
+}
+
 export type BackendFailure = Extract<AuthedResult<unknown>, { ok: false }>
 
 /** True only for the four verification-code 401s, which must never be refreshed and retried. */
@@ -82,32 +110,7 @@ function mapEndpointStatus(
   status: number,
   message: string
 ): AuthErrorCode | undefined {
-  switch (endpoint) {
-    case "login":
-      if (status === 401) return "INVALID_CREDENTIALS"
-      if (status === 429) return "TOO_MANY_ATTEMPTS"
-      return undefined
-    case "signup":
-      return status === 409 ? "EMAIL_TAKEN" : undefined
-    case "verify-email":
-      if (status === 401)
-        return VERIFY_CODE_ERRORS.get(message) ?? "SESSION_EXPIRED"
-      if (status === 429) return "TOO_MANY_ATTEMPTS"
-      return undefined
-    case "resend-verification":
-      if (status === 429 && message === BACKEND_MESSAGES.resendCooldown)
-        return "RESEND_COOLDOWN"
-      if (status === 503) return "EMAIL_SEND_FAILED"
-      return undefined
-    case "reset-password":
-      return status === 401
-        ? (RESET_ERRORS.get(message) ?? "RESET_INVALID")
-        : undefined
-    case "oauth-exchange":
-      if (status === 401) return "OAUTH_FAILED"
-      if (status === 429) return "OAUTH_RATE_LIMITED"
-      return undefined
-    case "forgot-password":
-      return undefined
-  }
+  const rule = ENDPOINT_RULES[endpoint][status]
+  if (rule === undefined || typeof rule === "string") return rule
+  return rule.byMessage.get(message) ?? rule.otherwise
 }
