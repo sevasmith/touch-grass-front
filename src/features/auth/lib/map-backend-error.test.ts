@@ -128,6 +128,21 @@ describe("mapBackendError — fallthrough for unmatched messages", () => {
   )
 })
 
+describe("mapBackendError — inherited property names", () => {
+  it.each(["toString", "constructor", "__proto__"])(
+    "does not treat %j as a known message",
+    (message) => {
+      expect(mapBackendError("verify-email", http(401, message))).toBe(
+        "SESSION_EXPIRED"
+      )
+      expect(mapBackendError("reset-password", http(401, message))).toBe(
+        "RESET_INVALID"
+      )
+      expect(isVerifyCodeError(message)).toBe(false)
+    }
+  )
+})
+
 describe("mapBackendError — rows common to every endpoint", () => {
   it.each(ALL_ENDPOINTS)("%s: 400 → VALIDATION", (endpoint) => {
     expect(

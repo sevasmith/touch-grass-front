@@ -209,7 +209,7 @@ the placeholder routes. Every user story depends on this phase.
   - login and verify-email `429` → `TOO_MANY_ATTEMPTS`; any other `429` without a row of its own (for example signup or reset-password) → `RATE_LIMITED`
   - `session_expired` → `SESSION_EXPIRED`; `email_not_verified` → `EMAIL_NOT_VERIFIED`
   - `isVerifyCodeError(message)` is `true` only for the four verification-code messages
-- [ ] T040 Implement `src/features/auth/lib/map-backend-error.ts` (`mapBackendError`, `isVerifyCodeError`, and the backend message constants copied verbatim from `docs/backend-readme.md`)
+- [x] T040 Implement `src/features/auth/lib/map-backend-error.ts` (`mapBackendError`, `isVerifyCodeError`, and the backend message constants copied verbatim from `docs/backend-readme.md`)
 - [ ] T041 [P] Write failing tests in `src/features/auth/api/use-auth-mutation.test.tsx`. Mock `next/navigation`'s `useRouter` and wrap in a `QueryClientProvider`:
   - `{ ok: true, redirectTo }` → `router.replace(redirectTo)`
   - `SESSION_EXPIRED` → `router.replace("/login?reason=session_expired")`
