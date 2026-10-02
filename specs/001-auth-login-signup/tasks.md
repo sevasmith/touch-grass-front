@@ -74,7 +74,7 @@ assets.
   - `src/test/fetch.mock.ts`: a `mockFetch(routes)` helper that stubs `globalThis.fetch` with a `"METHOD /path"` → `Response | (req) => Response | Error` table, records every call (method, URL, headers, parsed JSON body), and exposes `calls("POST /auth/refresh")`
   - `src/test/render-with-query.tsx`: `renderWithQueryClient(ui)` renders inside a fresh `QueryClientProvider` (mutations `retry: 0`) and returns Testing Library's result
 - [x] T006 [P] Download the Figma assets from file `xDvS7vVu6JmMLjG1J27idD` node `1:2` through the Figma MCP (`download_assets`): the left hero image → `public/images/auth-hero.jpg`, the Google logo → `public/icons/google.png`, the help icon → `public/icons/help.svg`. Do **not** download the GitHub or Discord assets (FR-026)
-- [ ] T007 [P] Remap the design tokens in `src/_app/globals.css` per research R11:
+- [x] T007 [P] Remap the design tokens in `src/_app/globals.css` per research R11:
   - set `--background: #faf9f7`, `--foreground: #1a1c1b`, `--muted-foreground: #424844`, `--primary: #1a3026`, `--primary-foreground: #ffffff`, `--border: #c2c8c3`, `--input: #888c88`, `--ring: #1a3026`, and `--radius: 0.5rem` in `:root`
   - add `--input-background: #f4f3f1`, `--link: #051b12`, `--placeholder: #646b78`, `--hero-fallback: #e9e8e6`, and map them in `@theme inline` as `--color-input-background`, `--color-link`, `--color-placeholder`, `--color-hero-fallback`
   - map `--font-sans: var(--font-hanken-grotesk)` and `--font-heading: var(--font-manrope)` in `@theme inline`
