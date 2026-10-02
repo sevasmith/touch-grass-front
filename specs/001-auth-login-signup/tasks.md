@@ -180,7 +180,7 @@ the placeholder routes. Every user story depends on this phase.
   - a `KvError` from the store → `transient`
   - no stored key or value contains the plaintext refresh token
 - [x] T031 Implement `src/entities/session/lib/refresh-coordinator.ts` (`import "server-only"`). Export `refreshSession(oldRt, deps = { store: getKvStore(), now, sleep })` returning `RefreshOutcome`. Use a lock TTL of 10 000 ms, a result TTL of 30 000 ms, a 100 ms poll for up to 4 000 ms, and hash keys with `crypto.subtle.digest("SHA-256")`
-- [ ] T032 Write failing tests in `src/entities/session/api/authed-fetch.test.ts` (T005 helpers):
+- [x] T032 Write failing tests in `src/entities/session/api/authed-fetch.test.ts` (T005 helpers):
   - attaches `Bearer tg_at`
   - on `401` with `isSessionFailure(error) === true` (the default), calls `refreshSession` once, writes the new pair to `cookies()`, and retries **once** with the new token
   - a second `401` after the retry is classified again with `isSessionFailure`: `true` → clear the cookies and return `{ ok: false, kind: "session_expired" }`; `false` (a business `401`) → return that `401` result unchanged, with the **new** pair kept in the cookies
