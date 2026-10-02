@@ -201,7 +201,7 @@ the placeholder routes. Every user story depends on this phase.
   - `NewPasswordSchema` rejects 7 and 73 characters and accepts 8 and 72
   - `NewPasswordSchema` accepts `"aaaaaaaa"` (no composition rules, FR-032)
   - `withPasswordConfirmation(schema)` adds a refine that puts the mismatch error on `confirmPassword`
-- [ ] T038 Implement `src/features/auth/model/fields.ts` (`EmailSchema`, `NewPasswordSchema`, `withPasswordConfirmation`) with user-facing messages ("Enter your email", "Enter a valid email address", "Password must be 8–72 characters", "Passwords don't match")
+- [x] T038 Implement `src/features/auth/model/fields.ts` (`EmailSchema`, `NewPasswordSchema`, `withPasswordConfirmation`) with user-facing messages ("Enter your email", "Enter a valid email address", "Password must be 8–72 characters", "Passwords don't match")
 - [ ] T039 Write failing tests in `src/features/auth/lib/map-backend-error.test.ts` with **one case per row** of the error-mapping table in contracts/backend-api.md. Call `mapBackendError(endpoint, result)` where `endpoint ∈ "login" | "signup" | "verify-email" | "resend-verification" | "forgot-password" | "reset-password" | "oauth-exchange"`. Include:
   - exact-message matches for the verify-email and reset-password `401`s
   - a fallthrough for unmatched messages
