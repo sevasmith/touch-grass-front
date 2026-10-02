@@ -225,7 +225,7 @@ the placeholder routes. Every user story depends on this phase.
 
 ### App layer: providers, route tiers, proxy
 
-- [ ] T044a [P] Write failing tests in `src/_app/providers/QueryProvider.test.tsx`: `Providers` renders its children, and a child calling `useQueryClient()` sees `mutations.retry === 0` in the default options and gets the same client after a re-render
+- [x] T044a [P] Write failing tests in `src/_app/providers/QueryProvider.test.tsx`: `Providers` renders its children, and a child calling `useQueryClient()` sees `mutations.retry === 0` in the default options and gets the same client after a re-render
 - [ ] T045 Create `src/_app/providers/QueryProvider.tsx` (`"use client"`; a `QueryClient` created in `useState`, `defaultOptions.mutations.retry: 0`) and `src/_app/providers/index.ts` (exports `Providers`). Wrap `{children}` in `app/layout.tsx` with `<Providers>`
 - [ ] T046 [P] Write failing tests in `src/_app/proxy/route-tiers.test.ts`: `getRouteTier(pathname)` returns `public` for `/login`, `/register`, `/forgot-password`, `/reset-password`, `/oauth/complete`, and `/session-unavailable`; `unverified` for `/verify-email`; `verified` for `/map`, `/`, and any unknown path; trailing slashes are normalised
 - [ ] T047 Implement `src/_app/proxy/route-tiers.ts` (`ROUTE_TIERS: Record<string, "public" | "unverified">` listing only the looser routes, and `getRouteTier`, which defaults to `"verified"`; data-model §6)
