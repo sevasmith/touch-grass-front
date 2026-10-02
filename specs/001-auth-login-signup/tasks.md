@@ -126,7 +126,7 @@ the placeholder routes. Every user story depends on this phase.
   - non-`2xx` → `{ ok: false, kind: "http", status, error: ApiError }`
   - a network error or abort → `{ ok: false, kind: "network" }`
 
-- [ ] T014 Implement `src/shared/api/backend-fetch.ts` (`import "server-only"`). Export `backendFetch<T>(path, { method, body?, accessToken?, schema? })` returning `BackendResult<T>` (the discriminated union from T013), with errors parsed via `parseApiError`. Add a scrubbed `console.error` (method, path, status only) for network and `5xx`
+- [x] T014 Implement `src/shared/api/backend-fetch.ts` (`import "server-only"`). Export `backendFetch<T>(path, { method, body?, accessToken?, schema? })` returning `BackendResult<T>` (the discriminated union from T013), with errors parsed via `parseApiError`. Add a scrubbed `console.error` (method, path, status only) for network and `5xx`
 
 ### Shared: key-value store port (refresh coordinator backing)
 
