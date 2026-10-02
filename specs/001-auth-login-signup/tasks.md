@@ -346,7 +346,7 @@ in US3).
 ### Implementation for User Story 2
 
 - [x] T073 [P] [US2] Implement `src/features/auth/model/register.schema.ts` (`RegisterSchema = withPasswordConfirmation(z.object({ email: EmailSchema, password: NewPasswordSchema, confirmPassword: z.string().min(1, "Confirm your password") }))` (_as built: a required confirmation, so an empty submit shows three errors as T072 expects_), `RegisterInput`)
-- [ ] T074 [US2] Implement `src/features/auth/api/register.action.ts` (`"use server"`; contracts/server-actions.md `register` row; `writeTokenPair` + `writeCodeSentAt(store, Date.now())`; map with `mapBackendError("signup", …)`)
+- [x] T074 [US2] Implement `src/features/auth/api/register.action.ts` (`"use server"`; contracts/server-actions.md `register` row; `writeTokenPair` + `writeCodeSentAt(store, Date.now())`; map with `mapBackendError("signup", …)`)
 - [ ] T075 [US2] Implement `src/features/auth/api/use-register.ts` (`"use client"`; `useAuthMutation(register)`)
 - [ ] T076 [US2] Implement `src/features/auth/ui/RegisterForm.tsx` (`"use client"`; mirrors `LoginForm`: `EmailField`, two `PasswordField`s with `autoComplete="new-password"`, submit label "Sign Up", `EMAIL_TAKEN` → `setError("email", …)`)
 - [ ] T077 [US2] Export `RegisterForm` from `src/features/auth/index.ts`. Implement `src/_pages/register/ui/RegisterPage.tsx` (RSC; heading "Join Touch Grass" and subtitle "Create an account to start your journey." in the login page's typography and layout; `<RegisterForm />`), `src/_pages/register/index.ts`, and the thin route `app/(auth)/register/page.tsx`
