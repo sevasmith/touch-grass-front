@@ -370,7 +370,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
 
 - [x] T078 [P] [US3] Write failing tests in `src/features/auth/model/verify-email.schema.test.ts`: `VerifyEmailSchema` accepts `"012345"` and keeps it a string (leading zero preserved); it rejects `"12345"`, `"1234567"`, `"12a456"`, and `""`
 - [x] T079 [P] [US3] Write failing tests in `src/features/auth/lib/cooldown.test.ts`: `getCooldownEndsAt(codeSentAtMs | null, nowMs)` returns `codeSentAt + 60_000` when that is in the future and `null` when it is absent or elapsed; `secondsRemaining(endsAt, now)` rounds up
-- [ ] T080 [P] [US3] Write failing tests in `src/features/auth/api/verify-email.action.test.ts`:
+- [x] T080 [P] [US3] Write failing tests in `src/features/auth/api/verify-email.action.test.ts`:
   - `204` → `{ ok: true, redirectTo: "/map" }` with **zero** calls to `/auth/refresh`
   - each of the 4 code messages → its code (`CODE_INVALID`, `CODE_EXPIRED`, `CODE_NONE_ACTIVE`, `CODE_ATTEMPTS_EXHAUSTED`) with **exactly one** `POST /auth/verify-email` and no refresh (FR-014, SC-011)
   - a non-code `401` → refresh → retry once → `204` → success (FR-016: the guard rejected the first request before the code check, so the code is evaluated once)
