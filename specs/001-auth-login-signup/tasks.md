@@ -407,7 +407,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
 - [x] T087 [US3] Implement `src/features/auth/api/resend-verification.action.ts` (`"use server"`): `authedFetch("/auth/resend-verification", { method: "POST" })`. On `204`, `429`, and `503`, call `writeCodeSentAt(await cookies(), now)` and return `cooldownEndsAt: now + RESEND_COOLDOWN_MS`. The result type is `AuthActionResult<{ cooldownEndsAt: number }>`, extended with `cooldownEndsAt` on the failure branch
 - [x] T088 [US3] Implement `src/features/auth/api/use-verify-email.ts` and `src/features/auth/api/use-resend-verification.ts` (`"use client"`; `useAuthMutation`)
 - [x] T089 [US3] Implement `src/features/auth/ui/ResendCodeButton.tsx` (`"use client"`; props `initialCooldownEndsAt: number | null` and `emphasised?: boolean`; a 1 s `setInterval` countdown; `aria-live="polite"` status text; state machine per data-model §5)
-- [ ] T090 [US3] Implement `src/features/auth/ui/VerifyEmailForm.tsx` (`"use client"`):
+- [x] T090 [US3] Implement `src/features/auth/ui/VerifyEmailForm.tsx` (`"use client"`):
   - RHF + `zodResolver(VerifyEmailSchema)`
   - shadcn `InputOTP` with 6 slots, `maxLength={6}`, `pattern={REGEXP_ONLY_DIGITS}`, `autoComplete="one-time-code"`, value held as a string
   - explicit submit with no auto-submit
