@@ -1,5 +1,5 @@
 import { AuthDivider, GoogleSignInButton, RegisterForm } from "@/features/auth"
-import { AuthPageHeader } from "@/widgets/auth-shell"
+import { AuthPageHeader, AuthSwitchPrompt } from "@/widgets/auth-shell"
 
 export function RegisterPage() {
   return (
@@ -11,6 +11,11 @@ export function RegisterPage() {
       <RegisterForm />
       <AuthDivider />
       <GoogleSignInButton />
+      <AuthSwitchPrompt
+        prompt="Already have an account?"
+        linkLabel="Log in"
+        href="/login"
+      />
     </div>
   )
 }

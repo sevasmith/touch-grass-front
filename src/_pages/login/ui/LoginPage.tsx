@@ -5,7 +5,7 @@ import {
   LoginForm,
 } from "@/features/auth"
 import { Alert, AlertDescription } from "@/shared/ui/alert"
-import { AuthPageHeader } from "@/widgets/auth-shell"
+import { AuthPageHeader, AuthSwitchPrompt } from "@/widgets/auth-shell"
 
 import { LoginParamsSchema } from "../model/login-params.schema"
 
@@ -32,6 +32,11 @@ export async function LoginPage({ searchParams }: LoginPageProps) {
       <LoginForm />
       <AuthDivider />
       <GoogleSignInButton />
+      <AuthSwitchPrompt
+        prompt="Don't have an account?"
+        linkLabel="Sign up"
+        href="/register"
+      />
     </div>
   )
 }

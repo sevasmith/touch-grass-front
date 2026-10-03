@@ -494,7 +494,7 @@ scenarios 16–19).
 
 ### Implementation for User Story 5
 
-- [ ] T106 [US5] Add the switch-page prompt below the Google button using `next/link`, styled per Figma links (Hanken SemiBold 14/20, `text-link`): "Don't have an account? Sign up" in `src/_pages/login/ui/LoginPage.tsx`, and "Already have an account? Log in" in `src/_pages/register/ui/RegisterPage.tsx`
+- [x] T106 [US5] Add the switch-page prompt below the Google button using `next/link`, styled per Figma links (Hanken SemiBold 14/20, `text-link`): "Don't have an account? Sign up" in `src/_pages/login/ui/LoginPage.tsx`, and "Already have an account? Log in" in `src/_pages/register/ui/RegisterPage.tsx`
 
 **Checkpoint**: Quickstart scenario 20 (login ↔ register) passes.
 
