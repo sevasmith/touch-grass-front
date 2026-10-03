@@ -378,7 +378,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
   - a revoked refresh → `SESSION_EXPIRED` with cookies cleared
   - `429` → `TOO_MANY_ATTEMPTS`
   - an invalid code input → `VALIDATION` with no fetch
-- [ ] T081 [P] [US3] Write failing tests in `src/features/auth/api/resend-verification.action.test.ts`:
+- [x] T081 [P] [US3] Write failing tests in `src/features/auth/api/resend-verification.action.test.ts`:
   - `204` → `tg_code_sent_at` set and `{ ok: true, cooldownEndsAt }`
   - `429` with the cooldown message → `RESEND_COOLDOWN` plus `cooldownEndsAt`, cookie set
   - `429` other → `RATE_LIMITED` plus `cooldownEndsAt`, cookie set
