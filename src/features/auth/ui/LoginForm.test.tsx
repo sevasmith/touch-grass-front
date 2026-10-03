@@ -133,3 +133,13 @@ describe("LoginForm — submission", () => {
     )
   })
 })
+
+describe("LoginForm — password recovery (US6)", () => {
+  it('shows a "Forgot password?" link to /forgot-password beside the password label', () => {
+    renderWithQueryClient(<LoginForm />)
+
+    const link = screen.getByRole("link", { name: "Forgot password?" })
+    expect(link).toHaveAttribute("href", "/forgot-password")
+    expect(link.parentElement).toHaveTextContent("Password")
+  })
+})
