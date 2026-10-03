@@ -1,4 +1,4 @@
-import { RegisterForm } from "@/features/auth"
+import { AuthDivider, GoogleSignInButton, RegisterForm } from "@/features/auth"
 import { AuthPageHeader } from "@/widgets/auth-shell"
 
 export function RegisterPage() {
@@ -9,6 +9,8 @@ export function RegisterPage() {
         subtitle="Create an account to start your journey."
       />
       <RegisterForm />
+      <AuthDivider />
+      <GoogleSignInButton />
     </div>
   )
 }

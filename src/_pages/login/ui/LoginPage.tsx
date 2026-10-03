@@ -1,4 +1,9 @@
-import { AUTH_ERROR_COPY, LoginForm } from "@/features/auth"
+import {
+  AUTH_ERROR_COPY,
+  AuthDivider,
+  GoogleSignInButton,
+  LoginForm,
+} from "@/features/auth"
 import { Alert, AlertDescription } from "@/shared/ui/alert"
 import { AuthPageHeader } from "@/widgets/auth-shell"
 
@@ -25,6 +30,8 @@ export async function LoginPage({ searchParams }: LoginPageProps) {
         </Alert>
       ) : null}
       <LoginForm />
+      <AuthDivider />
+      <GoogleSignInButton />
     </div>
   )
 }
