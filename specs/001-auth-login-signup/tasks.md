@@ -397,7 +397,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
   - a click → success shows "New code sent" and re-enters the 60 s cooldown
   - `RESEND_COOLDOWN` and `EMAIL_SEND_FAILED` show their copy and enter cooldown from `cooldownEndsAt`
   - an `emphasised` prop changes the variant
-- [ ] T083a [P] [US3] Write failing tests in `src/_pages/verify-email/ui/VerifyEmailPage.test.tsx` (mock `next/headers` with the T005 jar and `VerifyEmailForm` through the barrel; set the clock with `vi.setSystemTime`): with `tg_code_sent_at` 20 s ago it passes `initialCooldownEndsAt` = sent time + 60 000 ms; without the cookie, or after 60 s, it passes `null`; it renders the "Verify your email" heading
+- [x] T083a [P] [US3] Write failing tests in `src/_pages/verify-email/ui/VerifyEmailPage.test.tsx` (mock `next/headers` with the T005 jar and `VerifyEmailForm` through the barrel; set the clock with `vi.setSystemTime`): with `tg_code_sent_at` 20 s ago it passes `initialCooldownEndsAt` = sent time + 60 000 ms; without the cookie, or after 60 s, it passes `null`; it renders the "Verify your email" heading
 
 ### Implementation for User Story 3
 
