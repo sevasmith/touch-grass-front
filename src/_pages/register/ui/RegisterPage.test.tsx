@@ -35,3 +35,19 @@ describe("Google sign-in (US4)", () => {
     ).toBeTruthy()
   })
 })
+
+describe("switching between login and signup (US5)", () => {
+  it('links "Log in" to /login below the Google button', async () => {
+    render(<RegisterPage />)
+
+    const link = screen.getByRole("link", { name: "Log in" })
+    expect(link).toHaveAttribute("href", "/login")
+    expect(link.parentElement).toHaveTextContent(
+      "Already have an account? Log in"
+    )
+    const google = screen.getByRole("link", { name: "Continue with Google" })
+    expect(
+      google.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
+})

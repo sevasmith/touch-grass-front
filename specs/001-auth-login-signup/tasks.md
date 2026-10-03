@@ -490,7 +490,7 @@ scenarios 16–19).
 
 ### Tests for User Story 5 (write first; they MUST fail) ⚠️
 
-- [ ] T105 [US5] Extend `src/_pages/login/ui/LoginPage.test.tsx` to assert a link named "Sign up" with `href="/register"`, and extend `src/_pages/register/ui/RegisterPage.test.tsx` (from T072a) to assert a link named "Log in" with `href="/login"`
+- [x] T105 [US5] Extend `src/_pages/login/ui/LoginPage.test.tsx` to assert a link named "Sign up" with `href="/register"`, and extend `src/_pages/register/ui/RegisterPage.test.tsx` (from T072a) to assert a link named "Log in" with `href="/login"`
 
 ### Implementation for User Story 5
 
