@@ -448,7 +448,7 @@ scenarios 16–19).
   - each of the 4 `OAuthErrorCode`s → `{ kind: "error", error }`
   - an unknown error, an empty token, or no params → `{ kind: "error", error: "oauth_failed" }`
   - an array-valued param → first value or `oauth_failed`
-- [ ] T093 [P] [US4] Write failing tests in `src/features/auth/api/exchange-oauth-token.action.test.ts`:
+- [x] T093 [P] [US4] Write failing tests in `src/features/auth/api/exchange-oauth-token.action.test.ts`:
   - `200` → cookies set, then `GET /auth/me`: verified → `"/map"`, unverified → `"/verify-email"`
   - `401` → `OAUTH_FAILED`; `429` → `OAUTH_RATE_LIMITED`; network → `NETWORK_ERROR`
   - an empty token → `OAUTH_FAILED` with no fetch
