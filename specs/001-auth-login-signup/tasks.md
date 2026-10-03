@@ -402,7 +402,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
 ### Implementation for User Story 3
 
 - [x] T084 [P] [US3] Implement `src/features/auth/model/verify-email.schema.ts` (`VerifyEmailSchema = z.object({ code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code") })`)
-- [ ] T085 [P] [US3] Implement `src/features/auth/config/verification.ts` (`RESEND_COOLDOWN_MS = 60_000`, `VERIFICATION_MAX_ATTEMPTS = 5`) and `src/features/auth/lib/cooldown.ts` (`getCooldownEndsAt`, `secondsRemaining`)
+- [x] T085 [P] [US3] Implement `src/features/auth/config/verification.ts` (`RESEND_COOLDOWN_MS = 60_000`, `VERIFICATION_MAX_ATTEMPTS = 5`) and `src/features/auth/lib/cooldown.ts` (`getCooldownEndsAt`, `secondsRemaining`)
 - [ ] T086 [US3] Implement `src/features/auth/api/verify-email.action.ts` (`"use server"`): `authedFetch("/auth/verify-email", { method: "POST", body: { code }, isSessionFailure: (e) => !isVerifyCodeError(e.message) })`, then map with `mapBackendError("verify-email", …)`. A successful result returns `redirectTo: "/map"` and performs no refresh or re-login (FR-016)
 - [ ] T087 [US3] Implement `src/features/auth/api/resend-verification.action.ts` (`"use server"`): `authedFetch("/auth/resend-verification", { method: "POST" })`. On `204`, `429`, and `503`, call `writeCodeSentAt(await cookies(), now)` and return `cooldownEndsAt: now + RESEND_COOLDOWN_MS`. The result type is `AuthActionResult<{ cooldownEndsAt: number }>`, extended with `cooldownEndsAt` on the failure branch
 - [ ] T088 [US3] Implement `src/features/auth/api/use-verify-email.ts` and `src/features/auth/api/use-resend-verification.ts` (`"use client"`; `useAuthMutation`)
