@@ -518,7 +518,7 @@ and 21–23).
 - [x] T108 [P] [US6] Write failing tests in `src/features/auth/api/forgot-password.action.test.ts`: `200` → `{ ok: true }`, and the result does **not** include the backend `message`; `429` → `RATE_LIMITED`; network → `NETWORK_ERROR`; invalid input → `VALIDATION` with no fetch
 - [x] T109 [P] [US6] Write failing tests in `src/features/auth/ui/ForgotPasswordForm.test.tsx` (mock `../api/forgot-password.action`; render with `renderWithQueryClient`): success replaces the form with the exact constant `FORGOT_PASSWORD_CONFIRMATION`, identical across two different emails (SC-008); `RATE_LIMITED` shows its copy; the pending state is disabled
 - [x] T110 [P] [US6] Write failing tests in `src/features/auth/model/reset-password.schema.test.ts`: `ResetPasswordSchema` (non-empty `token`; password 8–72; confirm matches) and `parseResetPasswordParams` (`{ token?: string }`, where an empty or array value gives `undefined`)
-- [ ] T111 [P] [US6] Write failing tests in `src/features/auth/api/reset-password.action.test.ts`:
+- [x] T111 [P] [US6] Write failing tests in `src/features/auth/api/reset-password.action.test.ts`:
   - the body is exactly `{ token, password }`
   - `204` → `{ ok: true }` and all `tg_*` cookies deleted
   - `RESET_ALREADY_USED` → cookies deleted
