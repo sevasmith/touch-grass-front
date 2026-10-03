@@ -526,7 +526,7 @@ and 21–23).
   - `RESET_SAME_PASSWORD` → `fieldErrors.password`
   - `429` → `RATE_LIMITED`, with cookies untouched
   - network → `NETWORK_ERROR`
-- [ ] T112 [P] [US6] Write failing tests in `src/features/auth/ui/ResetPasswordForm.test.tsx` (mock `../api/reset-password.action`; render with `renderWithQueryClient`):
+- [x] T112 [P] [US6] Write failing tests in `src/features/auth/ui/ResetPasswordForm.test.tsx` (mock `../api/reset-password.action`; render with `renderWithQueryClient`):
   - on mount `history.replaceState(null, "", "/reset-password")` is called, and the token is kept in component state and submitted
   - with no token, the "invalid link" state shows a "Request a new link" link → `/forgot-password`
   - success shows the "signed out everywhere" message plus a "Log in" link → `/login`
