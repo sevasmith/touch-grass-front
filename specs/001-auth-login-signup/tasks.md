@@ -563,7 +563,7 @@ and 21–23).
   - confirm every file importing `@/entities/session`, `backend-fetch`, `env.server`, or `kv` is a Server Action, proxy, RSC, or `server-only` module, and that client modules use only `import type` from `@/entities/session`
   - confirm `next.config.ts` has no `serverActions.allowedOrigins`
 - [x] T125 [P] Add a "Running locally" section to `README.md`: the env vars from research R14 (`NEXT_PUBLIC_API_URL`; the Upstash vars and `SESSION_CACHE_KEY` from `openssl rand -base64 32`, optional locally and required on Vercel), the backend `FRONTEND_URL` requirement, the `localhost` (not `127.0.0.1`) note, and the production blocker TODO `BACKEND_RATE_LIMIT_IP`
-- [ ] T126 Run the automated gates from quickstart.md (`pnpm test:run`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, which needs no Upstash vars) and fix any failures
+- [x] T126 Run the automated gates from quickstart.md (`pnpm test:run`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, which needs no Upstash vars) and fix any failures
 - [ ] T127 Run the 25 manual scenarios in `specs/001-auth-login-signup/quickstart.md` against the local backend, including the DevTools SC-010 cookie and storage checks, scenario 13 (three tabs → exactly one `/auth/refresh`), and scenario 25 (Figma pixel comparison at 1280×1024 and 375px, no CLS, keyboard-only pass through every form and the OTP input). Record any deviations in the PR description
 
 ---
