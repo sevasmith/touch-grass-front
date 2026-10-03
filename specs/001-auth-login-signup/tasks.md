@@ -416,10 +416,12 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
 
   The form composes `ResendCodeButton` and takes `initialCooldownEndsAt` as a prop
 
-- [ ] T091 [US3] Export `VerifyEmailForm` and `getCooldownEndsAt` from `src/features/auth/index.ts`. Implement `src/_pages/verify-email/ui/VerifyEmailPage.tsx`, an RSC that:
+- [x] T091 [US3] Export `VerifyEmailForm` and `getCooldownEndsAt` from `src/features/auth/index.ts`. Implement `src/_pages/verify-email/ui/VerifyEmailPage.tsx`, an RSC that:
   - reads `readCodeSentAt(await cookies())` from `@/entities/session`
   - computes `getCooldownEndsAt(…, Date.now())` (from `@/features/auth`)
   - renders a heading ("Verify your email"), an explanation, and `<VerifyEmailForm initialCooldownEndsAt={…} />`
+
+  _As built: the cookie read and `Date.now()` live in `src/_pages/verify-email/api/get-initial-cooldown.ts`, because the React Compiler lint rule (`react-hooks/purity`) rejects `Date.now()` in a component body_
 
   Also create `src/_pages/verify-email/index.ts` and the thin route `app/(auth)/verify-email/page.tsx`. Once `/verify-email` exists, remove the `as Route` cast on `AUTH_ROUTES.verifyEmail` in `src/features/auth/config/routes.ts` (T042)
 
