@@ -385,12 +385,12 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
   - `503` → `EMAIL_SEND_FAILED` plus `cooldownEndsAt`, cookie set
   - session revoked → `SESSION_EXPIRED`
   - `403` "Email not verified" never occurs here (AllowUnverified), but a `403` maps through `authedFetch` to `EMAIL_NOT_VERIFIED` without crashing
-- [ ] T082 [P] [US3] Write failing tests in `src/features/auth/ui/VerifyEmailForm.test.tsx` (mock `../api/verify-email.action`, `../api/resend-verification.action`, and `next/navigation`; render with `renderWithQueryClient`):
+- [x] T082 [P] [US3] Write failing tests in `src/features/auth/ui/VerifyEmailForm.test.tsx` (mock `../api/verify-email.action`, `../api/resend-verification.action`, and `next/navigation`; render with `renderWithQueryClient`):
   - only digits are accepted
   - typing the 6th digit does **not** submit; submit needs the button or Enter
   - the action is called once per submit and the button is disabled while pending
   - `CODE_INVALID` clears the input and shows "…used one of your 5 attempts"
-  - `CODE_EXPIRED`, `CODE_NONE_ACTIVE`, and `CODE_ATTEMPTS_EXHAUSTED` show their copy and call an `onNeedsResend` prop
+  - `CODE_EXPIRED`, `CODE_NONE_ACTIVE`, and `CODE_ATTEMPTS_EXHAUSTED` show their copy and emphasise the form's own resend button (_as built: the form composes `ResendCodeButton` per T090 and data-model §5, so no `onNeedsResend` prop is needed_)
 - [ ] T083 [P] [US3] Write failing tests in `src/features/auth/ui/ResendCodeButton.test.tsx` (fake timers, mock `../api/resend-verification.action`; render with `renderWithQueryClient`):
   - with `initialCooldownEndsAt` 60 s ahead, the button is disabled with a countdown ("Resend code in 60s") that ticks to enabled
   - without a cooldown it is enabled
