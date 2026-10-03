@@ -443,7 +443,7 @@ scenarios 16–19).
 
 ### Tests for User Story 4 (write first; they MUST fail) ⚠️
 
-- [ ] T092 [P] [US4] Write failing tests in `src/features/auth/model/oauth-complete-params.schema.test.ts`. `parseOAuthCompleteParams(searchParams)`:
+- [x] T092 [P] [US4] Write failing tests in `src/features/auth/model/oauth-complete-params.schema.test.ts`. `parseOAuthCompleteParams(searchParams)`:
   - `{ token: "x" }` → `{ kind: "token", token: "x" }`
   - each of the 4 `OAuthErrorCode`s → `{ kind: "error", error }`
   - an unknown error, an empty token, or no params → `{ kind: "error", error: "oauth_failed" }`
