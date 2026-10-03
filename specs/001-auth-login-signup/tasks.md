@@ -546,7 +546,7 @@ and 21–23).
 - [x] T118 [US6] Implement `src/features/auth/ui/ResetPasswordForm.tsx` (`"use client"`; prop `initialToken?: string`; a mount effect calls `replaceState` and stores the token in `useState`; two `PasswordField`s with `autoComplete="new-password"`; the states from data-model §5)
 - [x] T119 [US6] Export `ForgotPasswordForm`, `ResetPasswordForm`, and `parseResetPasswordParams` from `src/features/auth/index.ts`. Add a "Forgot password?" `next/link` → `/forgot-password` to `src/features/auth/ui/LoginForm.tsx`, beside the password label per Figma (this makes T112a pass)
 - [x] T120 [US6] Implement `src/_pages/forgot-password/ui/ForgotPasswordPage.tsx` (heading "Reset your password" plus `<ForgotPasswordForm />`), `src/_pages/forgot-password/index.ts`, and the thin route `app/(auth)/forgot-password/page.tsx`
-- [ ] T121 [US6] Implement `src/_pages/reset-password/ui/ResetPasswordPage.tsx` (async RSC that takes `searchParams`, parses it with `parseResetPasswordParams`, and renders the heading "Set a new password" plus `<ResetPasswordForm initialToken={…} />`), `src/_pages/reset-password/index.ts`, and the thin route `app/(auth)/reset-password/page.tsx` (renders `<ResetPasswordPage searchParams={searchParams} />`)
+- [x] T121 [US6] Implement `src/_pages/reset-password/ui/ResetPasswordPage.tsx` (async RSC that takes `searchParams`, parses it with `parseResetPasswordParams`, and renders the heading "Set a new password" plus `<ResetPasswordForm initialToken={…} />`), `src/_pages/reset-password/index.ts`, and the thin route `app/(auth)/reset-password/page.tsx` (renders `<ResetPasswordPage searchParams={searchParams} />`)
 
 **Checkpoint**: Quickstart scenarios 20–23 pass, and all earlier stories still pass.
 
