@@ -391,7 +391,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
   - the action is called once per submit and the button is disabled while pending
   - `CODE_INVALID` clears the input and shows "…used one of your 5 attempts"
   - `CODE_EXPIRED`, `CODE_NONE_ACTIVE`, and `CODE_ATTEMPTS_EXHAUSTED` show their copy and emphasise the form's own resend button (_as built: the form composes `ResendCodeButton` per T090 and data-model §5, so no `onNeedsResend` prop is needed_)
-- [ ] T083 [P] [US3] Write failing tests in `src/features/auth/ui/ResendCodeButton.test.tsx` (fake timers, mock `../api/resend-verification.action`; render with `renderWithQueryClient`):
+- [x] T083 [P] [US3] Write failing tests in `src/features/auth/ui/ResendCodeButton.test.tsx` (fake timers, mock `../api/resend-verification.action`; render with `renderWithQueryClient`):
   - with `initialCooldownEndsAt` 60 s ahead, the button is disabled with a countdown ("Resend code in 60s") that ticks to enabled
   - without a cooldown it is enabled
   - a click → success shows "New code sent" and re-enters the 60 s cooldown
