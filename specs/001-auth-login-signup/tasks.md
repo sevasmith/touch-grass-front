@@ -533,7 +533,7 @@ and 21–23).
   - `RESET_ALREADY_USED`, `RESET_REPLACED`, `RESET_EXPIRED`, and `RESET_INVALID` each show distinct copy; the last three include "Request a new link"
   - `RESET_SAME_PASSWORD` shows a field error on password
 - [x] T112a [P] [US6] Extend `src/features/auth/ui/LoginForm.test.tsx`: a "Forgot password?" link with `href="/forgot-password"` sits beside the password label
-- [ ] T112b [P] [US6] Write failing tests in `src/_pages/forgot-password/ui/ForgotPasswordPage.test.tsx` (mock `ForgotPasswordForm` through the barrel): it renders the "Reset your password" heading and `ForgotPasswordForm`
+- [x] T112b [P] [US6] Write failing tests in `src/_pages/forgot-password/ui/ForgotPasswordPage.test.tsx` (mock `ForgotPasswordForm` through the barrel): it renders the "Reset your password" heading and `ForgotPasswordForm`
 - [ ] T112c [P] [US6] Write failing tests in `src/_pages/reset-password/ui/ResetPasswordPage.test.tsx` (mock `ResetPasswordForm` through the barrel): `searchParams.token` reaches the form as `initialToken`; an empty or array value gives `undefined`; it renders the "Set a new password" heading
 
 ### Implementation for User Story 6
