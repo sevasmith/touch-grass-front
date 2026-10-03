@@ -515,7 +515,7 @@ and 21–23).
 ### Tests for User Story 6 (write first; they MUST fail) ⚠️
 
 - [x] T107 [P] [US6] Write failing tests in `src/features/auth/model/forgot-password.schema.test.ts`: `ForgotPasswordSchema` validates `email`, and `ForgotPasswordResponseSchema` requires `{ message: string }`
-- [ ] T108 [P] [US6] Write failing tests in `src/features/auth/api/forgot-password.action.test.ts`: `200` → `{ ok: true }`, and the result does **not** include the backend `message`; `429` → `RATE_LIMITED`; network → `NETWORK_ERROR`; invalid input → `VALIDATION` with no fetch
+- [x] T108 [P] [US6] Write failing tests in `src/features/auth/api/forgot-password.action.test.ts`: `200` → `{ ok: true }`, and the result does **not** include the backend `message`; `429` → `RATE_LIMITED`; network → `NETWORK_ERROR`; invalid input → `VALIDATION` with no fetch
 - [ ] T109 [P] [US6] Write failing tests in `src/features/auth/ui/ForgotPasswordForm.test.tsx` (mock `../api/forgot-password.action`; render with `renderWithQueryClient`): success replaces the form with the exact constant `FORGOT_PASSWORD_CONFIRMATION`, identical across two different emails (SC-008); `RATE_LIMITED` shows its copy; the pending state is disabled
 - [ ] T110 [P] [US6] Write failing tests in `src/features/auth/model/reset-password.schema.test.ts`: `ResetPasswordSchema` (non-empty `token`; password 8–72; confirm matches) and `parseResetPasswordParams` (`{ token?: string }`, where an empty or array value gives `undefined`)
 - [ ] T111 [P] [US6] Write failing tests in `src/features/auth/api/reset-password.action.test.ts`:
