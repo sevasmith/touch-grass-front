@@ -454,7 +454,7 @@ scenarios 16–19).
   - an empty token → `OAUTH_FAILED` with no fetch
   - exactly one `POST /auth/oauth/exchange` per call
 - [x] T094 [P] [US4] Write failing tests in `src/features/auth/ui/GoogleSignInButton.test.tsx`: it renders an `<a>` (not a `<button>`) whose `href` is `${NEXT_PUBLIC_API_URL}/auth/google`, labelled "Continue with Google", with a decorative Google logo (`alt=""`) and full width. No GitHub or Discord options exist. `AuthDivider` renders "or" with separators
-- [ ] T095 [P] [US4] Write failing tests in `src/features/auth/ui/OAuthErrorCard.test.tsx`: for `access_denied`, `email_already_in_use`, `too_many_requests`, and `oauth_failed`, plus the exchange failures `OAUTH_FAILED`, `OAUTH_RATE_LIMITED`, and `NETWORK_ERROR`, it renders the matching copy in `role="alert"`, a "Try again" link to the Google start URL, and a "Back to log in" link to `/login`
+- [x] T095 [P] [US4] Write failing tests in `src/features/auth/ui/OAuthErrorCard.test.tsx`: for `access_denied`, `email_already_in_use`, `too_many_requests`, and `oauth_failed`, plus the exchange failures `OAUTH_FAILED`, `OAUTH_RATE_LIMITED`, and `NETWORK_ERROR`, it renders the matching copy in `role="alert"`, a "Try again" link to the Google start URL, and a "Back to log in" link to `/login`
 - [ ] T096 [P] [US4] Write failing tests in `src/features/auth/ui/OAuthCompleteHandler.test.tsx` (mock `../api/exchange-oauth-token.action` and `next/navigation`):
   - wrapped in `<StrictMode>` with `{ kind: "token" }`, the action is called **exactly once**
   - `history.replaceState(null, "", "/oauth/complete")` is called **before** the action
