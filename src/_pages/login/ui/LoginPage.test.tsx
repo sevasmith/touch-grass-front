@@ -45,3 +45,17 @@ describe("LoginPage", () => {
     expect(screen.queryByText(NOTICE)).not.toBeInTheDocument()
   })
 })
+
+describe("Google sign-in (US4)", () => {
+  it('renders the "or" divider and a Continue with Google link below the form', async () => {
+    await renderPage()
+
+    const form = screen.getByTestId("login-form")
+    const google = screen.getByRole("link", { name: "Continue with Google" })
+    expect(google).toHaveAttribute("href", "http://api.test/auth/google")
+    expect(screen.getByText("or")).toBeInTheDocument()
+    expect(
+      form.compareDocumentPosition(google) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
+})

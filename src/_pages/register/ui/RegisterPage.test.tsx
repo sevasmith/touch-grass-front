@@ -21,3 +21,17 @@ describe("RegisterPage", () => {
     expect(screen.getByTestId("register-form")).toBeInTheDocument()
   })
 })
+
+describe("Google sign-in (US4)", () => {
+  it('renders the "or" divider and a Continue with Google link below the form', async () => {
+    render(<RegisterPage />)
+
+    const form = screen.getByTestId("register-form")
+    const google = screen.getByRole("link", { name: "Continue with Google" })
+    expect(google).toHaveAttribute("href", "http://api.test/auth/google")
+    expect(screen.getByText("or")).toBeInTheDocument()
+    expect(
+      form.compareDocumentPosition(google) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy()
+  })
+})

@@ -463,7 +463,7 @@ scenarios 16–19).
   - failure → `OAuthErrorCard` with the mapped code
   - the action **rejects** → `OAuthErrorCard` with `NETWORK_ERROR` (the "Signing you in…" spinner never stays up), and the action is still called only once
   - `{ kind: "error" }` → `replaceState` is still called, no action call, and the error card is shown
-- [ ] T096a [P] [US4] Extend `src/_pages/login/ui/LoginPage.test.tsx` and `src/_pages/register/ui/RegisterPage.test.tsx`: each page renders the "or" divider and a "Continue with Google" link whose `href` is the Google start URL, below the form
+- [x] T096a [P] [US4] Extend `src/_pages/login/ui/LoginPage.test.tsx` and `src/_pages/register/ui/RegisterPage.test.tsx`: each page renders the "or" divider and a "Continue with Google" link whose `href` is the Google start URL, below the form
 - [ ] T096b [P] [US4] Write failing tests in `src/_pages/oauth-complete/ui/OAuthCompletePage.test.tsx` (mock `OAuthCompleteHandler` through the barrel): `searchParams` `{ token: "x" }` gives the handler `{ kind: "token", token: "x" }`, and `{}` gives `{ kind: "error", error: "oauth_failed" }`
 
 ### Implementation for User Story 4
