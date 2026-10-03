@@ -538,7 +538,7 @@ and 21–23).
 
 ### Implementation for User Story 6
 
-- [ ] T113 [P] [US6] Implement `src/features/auth/model/forgot-password.schema.ts` (`ForgotPasswordSchema`, `ForgotPasswordResponseSchema`) and `src/features/auth/config/forgot-password.ts` (`FORGOT_PASSWORD_CONFIRMATION = "If that email is registered, a reset link has been sent."`)
+- [x] T113 [P] [US6] Implement `src/features/auth/model/forgot-password.schema.ts` (`ForgotPasswordSchema`, `ForgotPasswordResponseSchema`) and `src/features/auth/config/forgot-password.ts` (`FORGOT_PASSWORD_CONFIRMATION = "If that email is registered, a reset link has been sent."`)
 - [ ] T114 [US6] Implement `src/features/auth/api/forgot-password.action.ts` (`"use server"`; `backendFetch("/auth/forgot-password", { schema: ForgotPasswordResponseSchema })`; never forwards the backend message) and `src/features/auth/api/use-forgot-password.ts`
 - [ ] T115 [US6] Implement `src/features/auth/ui/ForgotPasswordForm.tsx` (`"use client"`; `EmailField`, a "Send reset link" submit, and a success state rendering `FORGOT_PASSWORD_CONFIRMATION` plus a "Back to log in" link)
 - [ ] T116 [P] [US6] Implement `src/features/auth/model/reset-password.schema.ts` (`ResetPasswordSchema` via `withPasswordConfirmation`, `ResetPasswordParamsSchema`, `parseResetPasswordParams`)
