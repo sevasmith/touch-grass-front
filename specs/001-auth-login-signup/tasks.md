@@ -556,7 +556,7 @@ and 21–23).
 
 **Purpose**: Clean-up, security verification, and final validation across all stories.
 
-- [ ] T122 [P] Delete the unused create-next-app assets `public/file.svg`, `public/globe.svg`, `public/next.svg`, `public/vercel.svg`, and `public/window.svg` (grep first to confirm nothing references them)
+- [x] T122 [P] Delete the unused create-next-app assets `public/file.svg`, `public/globe.svg`, `public/next.svg`, `public/vercel.svg`, and `public/window.svg` (grep first to confirm nothing references them)
 - [ ] T123 [P] Remove the stale coverage excludes in `vitest.config.ts` (`src/shared/lib/apollo/**`, `src/shared/providers/**`, `src/features/**/providers/**`, `src/features/skills/**`). Remove `src/entities/**` and `src/_app/**` from the excludes so the session entity and proxy count toward the 80% threshold, keeping `src/_app/providers/**` excluded. Then confirm `pnpm test:coverage` meets the thresholds
 - [ ] T124 [P] Security sweep:
   - grep `src/` and `app/` for `dangerouslySetInnerHTML`, `localStorage`, `sessionStorage`, `document.cookie`, `jwt`/`atob` decoding of tokens, and `console.*` calls that include `token`, `code`, or `password` (expect none)
