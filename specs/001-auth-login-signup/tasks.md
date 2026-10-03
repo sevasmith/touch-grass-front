@@ -368,7 +368,7 @@ Resend enforces the cooldown (quickstart scenarios 4–8, 11).
 
 ### Tests for User Story 3 (write first; they MUST fail) ⚠️
 
-- [ ] T078 [P] [US3] Write failing tests in `src/features/auth/model/verify-email.schema.test.ts`: `VerifyEmailSchema` accepts `"012345"` and keeps it a string (leading zero preserved); it rejects `"12345"`, `"1234567"`, `"12a456"`, and `""`
+- [x] T078 [P] [US3] Write failing tests in `src/features/auth/model/verify-email.schema.test.ts`: `VerifyEmailSchema` accepts `"012345"` and keeps it a string (leading zero preserved); it rejects `"12345"`, `"1234567"`, `"12a456"`, and `""`
 - [ ] T079 [P] [US3] Write failing tests in `src/features/auth/lib/cooldown.test.ts`: `getCooldownEndsAt(codeSentAtMs | null, nowMs)` returns `codeSentAt + 60_000` when that is in the future and `null` when it is absent or elapsed; `secondsRemaining(endsAt, now)` rounds up
 - [ ] T080 [P] [US3] Write failing tests in `src/features/auth/api/verify-email.action.test.ts`:
   - `204` → `{ ok: true, redirectTo: "/map" }` with **zero** calls to `/auth/refresh`
