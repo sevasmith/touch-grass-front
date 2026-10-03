@@ -5,16 +5,19 @@ export {
   type AuthErrorCode,
 } from "./model/auth-error"
 export { LoginSchema, type LoginInput } from "./model/login.schema"
+export { parseResetPasswordParams } from "./model/reset-password.schema"
 export {
   parseOAuthCompleteParams,
   type OAuthCompleteParams,
 } from "./model/oauth-complete-params.schema"
 export { RegisterSchema, type RegisterInput } from "./model/register.schema"
 export { AuthDivider } from "./ui/AuthDivider"
+export { ForgotPasswordForm } from "./ui/ForgotPasswordForm"
 export { FormErrorAlert } from "./ui/FormErrorAlert"
 export { GoogleSignInButton } from "./ui/GoogleSignInButton"
 export { LoginForm } from "./ui/LoginForm"
 export { LogoutButton } from "./ui/LogoutButton"
 export { OAuthCompleteHandler } from "./ui/OAuthCompleteHandler"
 export { RegisterForm } from "./ui/RegisterForm"
+export { ResetPasswordForm } from "./ui/ResetPasswordForm"
 export { VerifyEmailForm } from "./ui/VerifyEmailForm"

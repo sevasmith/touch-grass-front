@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
@@ -39,6 +40,14 @@ export function LoginForm() {
       <EmailField error={errors.email?.message} {...form.register("email")} />
       <PasswordField
         autoComplete="current-password"
+        labelAside={
+          <Link
+            href="/forgot-password"
+            className="text-sm leading-5 font-semibold text-link underline-offset-4 hover:underline"
+          >
+            Forgot password?
+          </Link>
+        }
         error={errors.password?.message}
         {...form.register("password")}
       />
