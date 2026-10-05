@@ -1,8 +1,11 @@
 import { render } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
+import { cookieJar, resetNextHeaders } from "@/test/next-headers.mock"
 
 import { OAuthCompletePage } from "./OAuthCompletePage"
 
+vi.mock("next/headers", () => import("@/test/next-headers.mock"))
 const handler = vi.hoisted(() => ({ props: vi.fn() }))
 vi.mock("@/features/auth", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/features/auth")>()),
@@ -14,23 +17,38 @@ vi.mock("@/features/auth", async (importOriginal) => ({
 
 type SearchParams = Record<string, string | string[] | undefined>
 
-async function renderPage(searchParams: SearchParams) {
+beforeEach(() => {
+  resetNextHeaders()
+  handler.props.mockReset()
+})
+
+async function renderPage(searchParams: SearchParams = {}) {
   render(
     await OAuthCompletePage({ searchParams: Promise.resolve(searchParams) })
   )
 }
 
 describe("OAuthCompletePage", () => {
-  it("passes a token to the handler", async () => {
-    await renderPage({ token: "x" })
+  it("passes the handoff cookie's token to the handler", async () => {
+    cookieJar.seed({ tg_oauth_token: "x" })
+
+    await renderPage()
 
     expect(handler.props).toHaveBeenCalledWith({
       params: { kind: "token", token: "x" },
     })
   })
 
+  it("ignores a token in the URL", async () => {
+    await renderPage({ token: "from-url" })
+
+    expect(handler.props).toHaveBeenCalledWith({
+      params: { kind: "error", error: "oauth_failed" },
+    })
+  })
+
   it("passes oauth_failed when there are no params", async () => {
-    await renderPage({})
+    await renderPage()
 
     expect(handler.props).toHaveBeenCalledWith({
       params: { kind: "error", error: "oauth_failed" },

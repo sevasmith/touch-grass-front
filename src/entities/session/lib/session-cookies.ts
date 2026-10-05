@@ -4,12 +4,17 @@ import { serverEnv } from "@/shared/config/env.server"
 
 import {
   CODE_SENT_AT_MAX_AGE,
+  HANDOFF_COOKIES,
+  HANDOFF_MAX_AGE,
   SESSION_COOKIES,
   sessionCookieOptions,
+  type HandoffRoute,
 } from "../config/cookies"
 import type { TokenPair } from "../model/token-pair.schema"
 
-type CookieOptions = ReturnType<typeof sessionCookieOptions>
+type CookieOptions = Omit<ReturnType<typeof sessionCookieOptions>, "path"> & {
+  path: string
+}
 
 /**
  * The subset of the cookie API shared by `await cookies()` and `NextResponse.cookies`, so the same
@@ -55,4 +60,33 @@ export function readCodeSentAt(store: CookieStore): number | null {
   if (raw === undefined || !/^\d+$/.test(raw)) return null
   const value = Number(raw)
   return Number.isSafeInteger(value) ? value : null
+}
+
+export function isHandoffRoute(pathname: string): pathname is HandoffRoute {
+  return Object.hasOwn(HANDOFF_COOKIES, pathname)
+}
+
+export function writeHandoffToken(
+  store: CookieStore,
+  route: HandoffRoute,
+  token: string
+): void {
+  store.set(HANDOFF_COOKIES[route], token, {
+    ...sessionCookieOptions(HANDOFF_MAX_AGE),
+    path: route,
+  })
+}
+
+export function readHandoffToken(
+  store: CookieStore,
+  route: HandoffRoute
+): string | undefined {
+  return store.get(HANDOFF_COOKIES[route])?.value || undefined
+}
+
+export function clearHandoffToken(
+  store: CookieStore,
+  route: HandoffRoute
+): void {
+  store.delete({ name: HANDOFF_COOKIES[route], path: route })
 }

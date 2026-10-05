@@ -10,14 +10,3 @@ export const ResetPasswordSchema = withPasswordConfirmation(
   })
 )
 export type ResetPasswordInput = z.input<typeof ResetPasswordSchema>
-
-/** A missing, empty, or repeated `token` param means the link is unusable. */
-export const ResetPasswordParamsSchema = z.object({
-  token: z.string().min(1).optional().catch(undefined),
-})
-
-export function parseResetPasswordParams(
-  searchParams: Record<string, string | string[] | undefined>
-): { token?: string } {
-  return ResetPasswordParamsSchema.parse({ token: searchParams.token })
-}

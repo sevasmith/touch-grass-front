@@ -94,6 +94,24 @@ describe("exchangeOAuthToken action", () => {
     }
   )
 
+  it.each([
+    ["a successful exchange", json(200, pair)],
+    ["a failed exchange", json(429)],
+  ])("deletes the handoff token cookie after %s", async (_, response) => {
+    cookieJar.seed({ tg_oauth_token: "handoff" })
+    mockFetch({
+      "POST /auth/oauth/exchange": response,
+      "GET /auth/me": user(true),
+    })
+
+    await exchangeOAuthToken({ token: "handoff" })
+
+    expect(cookieJar.deleteOptions).toEqual([
+      { name: "tg_oauth_token", path: "/oauth/complete" },
+    ])
+    expect(cookieJar.get("tg_oauth_token")).toBeUndefined()
+  })
+
   it("never returns a token", async () => {
     mockFetch({
       "POST /auth/oauth/exchange": json(200, pair),

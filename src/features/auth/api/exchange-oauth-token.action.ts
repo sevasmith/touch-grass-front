@@ -3,7 +3,11 @@
 import { cookies } from "next/headers"
 import { z } from "zod"
 
-import { TokenPairSchema, writeTokenPair } from "@/entities/session"
+import {
+  clearHandoffToken,
+  TokenPairSchema,
+  writeTokenPair,
+} from "@/entities/session"
 import { getCurrentUser } from "@/entities/user"
 import { backendFetch } from "@/shared/api/backend-fetch"
 
@@ -21,6 +25,10 @@ export async function exchangeOAuthToken(
   input: unknown
 ): Promise<AuthActionResult> {
   try {
+    const store = await cookies()
+    // Single-use: whatever happens next, the page must not offer it again.
+    clearHandoffToken(store, "/oauth/complete")
+
     const parsed = ExchangeInputSchema.safeParse(input)
     if (!parsed.success) return { ok: false, error: "OAUTH_FAILED" }
 
@@ -32,7 +40,7 @@ export async function exchangeOAuthToken(
     if (!result.ok)
       return { ok: false, error: mapBackendError("oauth-exchange", result) }
 
-    writeTokenPair(await cookies(), result.data)
+    writeTokenPair(store, result.data)
 
     const me = await getCurrentUser(result.data.accessToken)
     const verified = !me.ok || me.user.emailVerified

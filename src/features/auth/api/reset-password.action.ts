@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers"
 
-import { clearSession } from "@/entities/session"
+import { clearHandoffToken, clearSession } from "@/entities/session"
 import { backendFetch } from "@/shared/api/backend-fetch"
 
 import { toFieldErrors } from "../lib/field-errors"
@@ -31,7 +31,9 @@ export async function resetPassword(input: unknown): Promise<AuthActionResult> {
       body: { token, password },
     })
     if (result.ok) {
-      clearSession(await cookies())
+      const store = await cookies()
+      clearSession(store)
+      clearHandoffToken(store, "/reset-password")
       return { ok: true }
     }
 

@@ -22,19 +22,12 @@ function submitPasswords(password = "new horse", confirmPassword = password) {
 
 beforeEach(() => {
   vi.mocked(resetPassword).mockReset()
-  vi.spyOn(window.history, "replaceState").mockImplementation(() => {})
 })
 
 describe("ResetPasswordForm — token handling", () => {
-  it("strips the token from the URL on mount and submits it from state", async () => {
+  it("submits the token it was given", async () => {
     vi.mocked(resetPassword).mockResolvedValue({ ok: true })
     renderWithQueryClient(<ResetPasswordForm initialToken="t0k3n" />)
-
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      null,
-      "",
-      "/reset-password"
-    )
 
     submitPasswords()
 

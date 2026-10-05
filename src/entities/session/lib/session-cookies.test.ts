@@ -14,10 +14,14 @@ import {
 import { CookieJar } from "@/test/next-headers.mock"
 
 import {
+  clearHandoffToken,
   clearSession,
+  isHandoffRoute,
   readCodeSentAt,
+  readHandoffToken,
   readSession,
   writeCodeSentAt,
+  writeHandoffToken,
   writeTokenPair,
   type CookieStore,
 } from "./session-cookies"
@@ -142,6 +146,47 @@ describe("code-sent-at cookie", () => {
 
   it("readCodeSentAt returns null without the cookie", () => {
     expect(readCodeSentAt(jar)).toBeNull()
+  })
+})
+
+describe("handoff tokens", () => {
+  it("writes the token HttpOnly for 5 minutes, scoped to its page", () => {
+    writeHandoffToken(jar, "/reset-password", "t0k3n")
+
+    expect(jar.lastSet("tg_reset_token")).toMatchObject({
+      value: "t0k3n",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/reset-password",
+        maxAge: 300,
+      },
+    })
+  })
+
+  it("reads the token back, treating an empty value as missing", () => {
+    expect(readHandoffToken(jar, "/oauth/complete")).toBeUndefined()
+    jar.seed({ tg_oauth_token: "" })
+    expect(readHandoffToken(jar, "/oauth/complete")).toBeUndefined()
+    jar.seed({ tg_oauth_token: "handoff" })
+    expect(readHandoffToken(jar, "/oauth/complete")).toBe("handoff")
+  })
+
+  it("deletes with the page path it was set with", () => {
+    clearHandoffToken(jar, "/oauth/complete")
+
+    expect(jar.deleteOptions).toEqual([
+      { name: "tg_oauth_token", path: "/oauth/complete" },
+    ])
+  })
+
+  it.each([
+    ["/oauth/complete", true],
+    ["/reset-password", true],
+    ["/login", false],
+    ["/toString", false],
+  ])("isHandoffRoute(%s) is %s", (path, expected) => {
+    expect(isHandoffRoute(path)).toBe(expected)
   })
 })
 

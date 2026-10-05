@@ -127,7 +127,7 @@ Users who forgot their password (or Google users who never set one) request a re
 6. **Given** a reset token that was already used, **When** the user submits, **Then** they see an "already used" message distinct from the "replaced by a newer request" message, and any session held by this browser is cleared (the backend revoked all sessions)
 7. **Given** a reset token that has been superseded by a newer request, **When** the user submits, **Then** they see a "this reset link has been replaced by a newer request — check your most recent email" message
 8. **Given** an expired reset token, **When** the user submits, **Then** they see a "reset link expired" message
-9. **Given** a new password identical to the current one, **When** the user submits, **Then** they see "New password must be different from your current password" (not shown for accounts that had no password)
+9. ~~**Given** a new password identical to the current one, **When** the user submits, **Then** they see "New password must be different from your current password"~~ Dropped: the backend removed this check on purpose (it acted as a password oracle; see `touch-grass-back/docs/known-gaps.md`) and accepts the current password. The frontend keeps the `RESET_SAME_PASSWORD` mapping in case the check returns.
 
 ---
 
@@ -197,7 +197,7 @@ Users who forgot their password (or Google users who never set one) request a re
 #### Google OAuth
 
 - **FR-022**: System MUST initiate Google sign-in by performing a full-page browser navigation directly to the backend Google entry point — never a background request and never through the frontend's server proxy.
-- **FR-023**: System MUST, on the completion page, immediately strip the handoff token from the URL and browser history before doing anything else.
+- **FR-023**: System MUST keep the handoff token out of the address bar and browser history: the server moves it into a short-lived, page-scoped HttpOnly cookie and redirects to the bare completion URL before the page renders.
 - **FR-024**: System MUST exchange the single-use handoff token for a real token pair on the frontend's server side, storing the result in the server-held session, exactly once — guarding against duplicate execution (e.g., React strict-mode double effects).
 - **FR-025**: System MUST map each backend error code (`access_denied`, `email_already_in_use`, `too_many_requests`, `oauth_failed`), the missing-token case, and any exchange failure to a clear, user-facing message with a retry path.
 - **FR-026**: System MUST render a single "Continue with Google" action on both login and signup. GitHub and Discord options MUST NOT be shown, as the backend supports only Google.

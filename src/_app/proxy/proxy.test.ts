@@ -105,6 +105,43 @@ describe("proxy — requests it never inspects", () => {
   })
 })
 
+describe.each([
+  ["/oauth/complete", "tg_oauth_token"],
+  ["/reset-password", "tg_reset_token"],
+])("proxy — %s?token= handoff", (path, cookieName) => {
+  it("moves the token into a page-scoped HttpOnly cookie and redirects to the bare URL", async () => {
+    const api = mockFetch({})
+
+    const response = await proxy(request(`${path}?token=abc.123`))
+
+    expectRedirect(response, path)
+    expect(response.cookies.get(cookieName)).toMatchObject({
+      value: "abc.123",
+      path,
+      httpOnly: true,
+      sameSite: "lax",
+      maxAge: 300,
+    })
+    expect(api.calls()).toHaveLength(0)
+  })
+
+  it("keeps the other query params", async () => {
+    const response = await proxy(request(`${path}/?token=t&error=x`))
+
+    expectRedirect(response, `${path}/?error=x`)
+  })
+
+  it.each(["?token=", "?token=a&token=b"])(
+    "deletes any stale token for %s",
+    async (query) => {
+      const response = await proxy(request(`${path}${query}`))
+
+      expectRedirect(response, path)
+      expect(response.cookies.get(cookieName)?.value).toBe("")
+    }
+  )
+})
+
 describe("proxy — public routes", () => {
   it.each([
     "/forgot-password",

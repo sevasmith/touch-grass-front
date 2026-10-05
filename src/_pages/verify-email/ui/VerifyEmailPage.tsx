@@ -1,4 +1,4 @@
-import { VerifyEmailForm } from "@/features/auth"
+import { LogoutPrompt, VerifyEmailForm } from "@/features/auth"
 import { AuthPageHeader } from "@/widgets/auth-shell"
 
 import { getInitialCooldownEndsAt } from "../api/get-initial-cooldown"
@@ -14,6 +14,10 @@ export async function VerifyEmailPage() {
         subtitle="We sent a 6-digit code to your email. Enter it below to finish setting up your account."
       />
       <VerifyEmailForm initialCooldownEndsAt={initialCooldownEndsAt} />
+      <LogoutPrompt
+        prompt="Wrong email, or want to verify later?"
+        linkLabel="Log out"
+      />
     </div>
   )
 }

@@ -179,13 +179,15 @@ needed.
 
 ## R6. Google OAuth completion (`/oauth/complete`)
 
-**Decision**: An RSC page reads `searchParams` and validates them with Zod
-(`OAuthCompleteParamsSchema`). It passes `{ token } | { error }` to the client component
-`OAuthCompleteHandler`. That component, inside a `useEffect`:
+**Decision**: The proxy answers `GET /oauth/complete?token=…` with a `307` to the bare URL and
+moves the token into the `tg_oauth_token` cookie (HttpOnly, `path=/oauth/complete`, 5 min), so the
+token never appears in the address bar or history. (A client-side `history.replaceState` after
+hydration left it visible for a moment; found in T127.) The RSC page reads the cookie and `?error=`,
+validates them with Zod (`OAuthCompleteParamsSchema`), and passes `{ token } | { error }` to the
+client component `OAuthCompleteHandler`. That component, inside a `useEffect`:
 
-1. Runs `history.replaceState(null, "", "/oauth/complete")` first.
-2. Guards with `const started = useRef(false)` so it runs exactly once under React StrictMode.
-3. Calls the `exchangeOAuthToken(token)` Server Action. The action calls `POST /auth/oauth/exchange`,
+1. Guards with `const started = useRef(false)` so it runs exactly once under React StrictMode.
+2. Calls the `exchangeOAuthToken(token)` Server Action. The action deletes the cookie, calls `POST /auth/oauth/exchange`,
    sets the cookies, and calls `GET /auth/me`. It returns `redirectTo` (`/map` or `/verify-email`) or
    an error code.
 

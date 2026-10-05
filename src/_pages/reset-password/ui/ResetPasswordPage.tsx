@@ -1,14 +1,12 @@
-import { parseResetPasswordParams, ResetPasswordForm } from "@/features/auth"
+import { cookies } from "next/headers"
+
+import { readHandoffToken } from "@/entities/session"
+import { ResetPasswordForm } from "@/features/auth"
 import { AuthPageHeader } from "@/widgets/auth-shell"
 
-interface ResetPasswordPageProps {
-  searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
-export async function ResetPasswordPage({
-  searchParams,
-}: ResetPasswordPageProps) {
-  const { token } = parseResetPasswordParams(await searchParams)
+/** The proxy has already moved `?token=` into a cookie, so it is read from there. */
+export async function ResetPasswordPage() {
+  const token = readHandoffToken(await cookies(), "/reset-password")
 
   return (
     <div className="flex flex-col gap-12">

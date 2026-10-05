@@ -1,9 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server"
 
 import {
+  clearHandoffToken,
   clearSession,
+  isHandoffRoute,
   readSession,
   refreshSession,
+  writeHandoffToken,
   writeTokenPair,
   type CookieStore,
   type TokenPair,
@@ -30,6 +33,9 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     return NextResponse.next()
   }
 
+  const handoff = handOffLinkToken(request)
+  if (handoff) return handoff
+
   const { pathname } = request.nextUrl
   const tier = getRouteTier(pathname)
   const session = readSession(forwardedCookies(request))
@@ -37,6 +43,28 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   if (tier === "public") return handlePublicRoute(request, pathname, session)
   if (!session) return redirectTo(request, "/login")
   return handleProtectedRoute(request, tier, await resolveMe(session))
+}
+
+/**
+ * `/oauth/complete?token=…` and `/reset-password?token=…`: moves the single-use token into a
+ * cookie scoped to that page and redirects to the bare URL, so the token never reaches the
+ * address bar or history. A missing, empty or repeated token clears any stale one.
+ */
+function handOffLinkToken(request: NextRequest): NextResponse | null {
+  const route = normalisePathname(request.nextUrl.pathname)
+  const tokens = request.nextUrl.searchParams.getAll("token")
+  if (!isHandoffRoute(route) || tokens.length === 0) return null
+
+  const url = request.nextUrl.clone()
+  url.searchParams.delete("token")
+  const response = NextResponse.redirect(url)
+  const [token] = tokens
+  if (tokens.length === 1 && token) {
+    writeHandoffToken(response.cookies, route, token)
+  } else {
+    clearHandoffToken(response.cookies, route)
+  }
+  return response
 }
 
 /** Public routes pass through; only /login and /register bounce an existing session. */

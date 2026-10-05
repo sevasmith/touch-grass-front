@@ -42,6 +42,18 @@ describe("VerifyEmailPage", () => {
     expect(screen.getByTestId("verify-form")).toBeInTheDocument()
   })
 
+  it("offers a way off the page by logging out", async () => {
+    await renderPage()
+
+    expect(
+      screen.getByText("Wrong email, or want to verify later?")
+    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Log out" })).toHaveAttribute(
+      "type",
+      "submit"
+    )
+  })
+
   it("passes the remaining cooldown when a code was sent 20 s ago", async () => {
     cookieJar.seed({ tg_code_sent_at: String(NOW - 20_000) })
 

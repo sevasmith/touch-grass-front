@@ -13,8 +13,6 @@ vi.mock("../api/exchange-oauth-token.action", () => ({
 const router = vi.hoisted(() => ({ replace: vi.fn() }))
 vi.mock("next/navigation", () => ({ useRouter: () => router }))
 
-const order: string[] = []
-
 function renderStrict(params: OAuthCompleteParams) {
   return render(
     <StrictMode>
@@ -24,25 +22,18 @@ function renderStrict(params: OAuthCompleteParams) {
 }
 
 beforeEach(() => {
-  order.length = 0
   vi.mocked(exchangeOAuthToken).mockReset()
-  vi.spyOn(window.history, "replaceState").mockImplementation(() => {
-    order.push("replaceState")
-  })
   vi.spyOn(console, "error").mockImplementation(() => {})
 })
 
 function exchangeResolvesTo(
   result: Awaited<ReturnType<typeof exchangeOAuthToken>>
 ) {
-  vi.mocked(exchangeOAuthToken).mockImplementation(async () => {
-    order.push("exchange")
-    return result
-  })
+  vi.mocked(exchangeOAuthToken).mockResolvedValue(result)
 }
 
 describe("OAuthCompleteHandler — token", () => {
-  it("exchanges exactly once under StrictMode, after stripping the token from the URL", async () => {
+  it("exchanges exactly once under StrictMode", async () => {
     exchangeResolvesTo({ ok: true, redirectTo: "/map" })
 
     renderStrict({ kind: "token", token: "handoff" })
@@ -50,14 +41,6 @@ describe("OAuthCompleteHandler — token", () => {
     await waitFor(() => expect(router.replace).toHaveBeenCalledWith("/map"))
     expect(exchangeOAuthToken).toHaveBeenCalledTimes(1)
     expect(exchangeOAuthToken).toHaveBeenCalledWith({ token: "handoff" })
-    expect(window.history.replaceState).toHaveBeenCalledWith(
-      null,
-      "",
-      "/oauth/complete"
-    )
-    expect(order.indexOf("replaceState")).toBeLessThan(
-      order.indexOf("exchange")
-    )
   })
 
   it('shows "Signing you in…" with a spinner while exchanging', () => {
@@ -106,20 +89,10 @@ describe("OAuthCompleteHandler — error param", () => {
     ["email_already_in_use", AUTH_ERROR_COPY.OAUTH_EMAIL_IN_USE],
     ["too_many_requests", AUTH_ERROR_COPY.OAUTH_RATE_LIMITED],
     ["oauth_failed", AUTH_ERROR_COPY.OAUTH_FAILED],
-  ] as const)(
-    "maps %s to its message, strips the URL and never exchanges",
-    async (error, copy) => {
-      renderStrict({ kind: "error", error })
+  ] as const)("maps %s to its message and never exchanges", (error, copy) => {
+    renderStrict({ kind: "error", error })
 
-      expect(screen.getByRole("alert")).toHaveTextContent(copy)
-      await waitFor(() =>
-        expect(window.history.replaceState).toHaveBeenCalledWith(
-          null,
-          "",
-          "/oauth/complete"
-        )
-      )
-      expect(exchangeOAuthToken).not.toHaveBeenCalled()
-    }
-  )
+    expect(screen.getByRole("alert")).toHaveTextContent(copy)
+    expect(exchangeOAuthToken).not.toHaveBeenCalled()
+  })
 })

@@ -195,7 +195,8 @@ Resend button:  cooldown(n s) ──tick──► ready ──click──► sen
 ### OAuth completion (`/oauth/complete`)
 
 ```text
-mount ─► replaceState(strip query) ─► guard(useRef)
+proxy: ?token= ─► 307 /oauth/complete + tg_oauth_token cookie (path-scoped, HttpOnly, 5 min)
+page reads the cookie ─► mount ─► guard(useRef)
   ├─ kind=error ─► showError(code)
   └─ kind=token ─► exchanging ─► ok ─► router.replace(/map | /verify-email)
                                ├─ fail ─► showError(OAUTH_FAILED | OAUTH_RATE_LIMITED | NETWORK_ERROR | …)
@@ -206,13 +207,14 @@ showError ─► "Try again" (navigates to {API}/auth/google) | "Back to log in"
 ### Reset password (`/reset-password`)
 
 ```text
-mount ─► replaceState(strip token; keep in component state)
+proxy: ?token= ─► 307 /reset-password + tg_reset_token cookie (path-scoped, HttpOnly, 5 min)
+page reads the cookie ─► token kept in component state (cookie deleted on success)
   ├─ no token ─► invalidLink
   └─ form ─submit─► submitting
        ├─ 204 ─► success (session cleared) ─► "Log in" link
        ├─ RESET_ALREADY_USED ─► error (session cleared)
        ├─ RESET_REPLACED | RESET_EXPIRED | RESET_INVALID ─► error + "Request a new link"
-       └─ RESET_SAME_PASSWORD ─► field error on password
+       └─ RESET_SAME_PASSWORD ─► field error on password (backend no longer sends it)
 ```
 
 ---

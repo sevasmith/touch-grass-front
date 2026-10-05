@@ -29,8 +29,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    // Browser extensions (e.g. LanguageTool) add attributes to <html> before hydration.
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         manrope.variable,
         hankenGrotesk.variable,

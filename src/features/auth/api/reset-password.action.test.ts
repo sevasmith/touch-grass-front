@@ -50,6 +50,19 @@ describe("resetPassword action", () => {
     expectCleared()
   })
 
+  it("on 204 also deletes the used handoff token cookie", async () => {
+    cookieJar.seed({ tg_reset_token: "t0k3n" })
+    mockFetch({ "POST /auth/reset-password": json(204) })
+
+    await resetPassword(input)
+
+    expect(cookieJar.deleteOptions).toContainEqual({
+      name: "tg_reset_token",
+      path: "/reset-password",
+    })
+    expect(cookieJar.get("tg_reset_token")).toBeUndefined()
+  })
+
   it("clears the session on RESET_ALREADY_USED", async () => {
     mockFetch({
       "POST /auth/reset-password": unauthorized("Reset token already used"),

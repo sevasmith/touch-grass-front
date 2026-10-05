@@ -5,7 +5,6 @@ export {
   type AuthErrorCode,
 } from "./model/auth-error"
 export { LoginSchema, type LoginInput } from "./model/login.schema"
-export { parseResetPasswordParams } from "./model/reset-password.schema"
 export {
   parseOAuthCompleteParams,
   type OAuthCompleteParams,
@@ -17,6 +16,7 @@ export { FormErrorAlert } from "./ui/FormErrorAlert"
 export { GoogleSignInButton } from "./ui/GoogleSignInButton"
 export { LoginForm } from "./ui/LoginForm"
 export { LogoutButton } from "./ui/LogoutButton"
+export { LogoutPrompt } from "./ui/LogoutPrompt"
 export { OAuthCompleteHandler } from "./ui/OAuthCompleteHandler"
 export { RegisterForm } from "./ui/RegisterForm"
 export { ResetPasswordForm } from "./ui/ResetPasswordForm"

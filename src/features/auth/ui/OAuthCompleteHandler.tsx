@@ -18,8 +18,8 @@ type HandlerState =
   { status: "exchanging" } | { status: "error"; code: AuthErrorCode }
 
 /**
- * /oauth/complete (data-model §5): strips the single-use handoff token from the URL, then
- * exchanges it exactly once, even under StrictMode's double effects.
+ * /oauth/complete (data-model §5): exchanges the single-use handoff token exactly once, even
+ * under StrictMode's double effects. The proxy has already removed it from the URL.
  */
 export function OAuthCompleteHandler({
   params,
@@ -37,7 +37,6 @@ export function OAuthCompleteHandler({
   useEffect(() => {
     if (started.current) return
     started.current = true
-    window.history.replaceState(null, "", "/oauth/complete")
     if (params.kind !== "token") return
 
     exchangeOAuthToken({ token: params.token }).then(

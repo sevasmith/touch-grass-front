@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import type { z } from "zod"
@@ -25,15 +25,11 @@ const isDeadLink = (
 ): error is (typeof DEAD_LINK_ERRORS)[number] =>
   (DEAD_LINK_ERRORS as readonly AuthErrorCode[]).includes(error)
 
-/** The single-use token arrives as a prop and lives only in state once the URL is stripped. */
+/** The single-use token arrives as a prop (the proxy keeps it out of the URL) and lives in state. */
 export function ResetPasswordForm({ initialToken }: { initialToken?: string }) {
   const [outcome, setOutcome] = useState<ResetOutcome | null>(
     initialToken ? null : "RESET_INVALID"
   )
-
-  useEffect(() => {
-    window.history.replaceState(null, "", "/reset-password")
-  }, [])
 
   const form = useForm<
     ResetPasswordValues,

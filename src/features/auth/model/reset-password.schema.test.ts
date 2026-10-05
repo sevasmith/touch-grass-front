@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  parseResetPasswordParams,
-  ResetPasswordSchema,
-} from "./reset-password.schema"
+import { ResetPasswordSchema } from "./reset-password.schema"
 
 const valid = {
   token: "t0k3n",
@@ -44,19 +41,5 @@ describe("ResetPasswordSchema", () => {
     expect(fieldMessages({ ...valid, confirmPassword: "bbbbbbbb" })).toEqual({
       confirmPassword: "Passwords don't match",
     })
-  })
-})
-
-describe("parseResetPasswordParams", () => {
-  it("returns the token", () => {
-    expect(parseResetPasswordParams({ token: "abc" })).toEqual({ token: "abc" })
-  })
-
-  it.each<[string, Record<string, string | string[] | undefined>]>([
-    ["no token", {}],
-    ["an empty token", { token: "" }],
-    ["an array value", { token: ["a", "b"] }],
-  ])("returns no token for %s", (_, params) => {
-    expect(parseResetPasswordParams(params)).toEqual({ token: undefined })
   })
 })
