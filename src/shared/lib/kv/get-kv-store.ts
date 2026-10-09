@@ -10,7 +10,7 @@ const globalForKv = globalThis as typeof globalThis & {
   __touchGrassKvStore?: KeyValueStore
 }
 
-/** Upstash when configured (required on Vercel by env validation), otherwise in-memory. */
+/** Upstash when both of its variables are set (optional, unused for now), otherwise in-memory. */
 export function getKvStore(): KeyValueStore {
   globalForKv.__touchGrassKvStore ??= createStore()
   return globalForKv.__touchGrassKvStore

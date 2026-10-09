@@ -27,8 +27,8 @@ function getKey(): Promise<CryptoKey> {
     )
     return configuredKey
   }
-  // Only off Vercel (env validation requires the key there): one random key per process, which
-  // is enough because the memory store is per process too.
+  // No key configured (env validation requires one only with Upstash): one random key per
+  // process, which is enough because the memory store is per process too.
   globalForCrypto.__touchGrassSessionCacheKey ??= crypto.subtle.generateKey(
     ALGORITHM,
     false,
