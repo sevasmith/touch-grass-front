@@ -1,8 +1,31 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change:   1.4.0 → 1.5.0
-Action:           Amendment raised by /speckit-analyze on 001-auth-login-signup (findings D2, D3).
+Version change:   1.5.0 → 1.6.0
+Action:           The backend's `POST /auth/refresh` now has a 20-second replay window
+                  (docs/backend-readme.md): repeating a just-rotated refresh token returns the same
+                  new refresh token instead of revoking every session. Upstash Redis is dropped for
+                  now, so there is no store shared between server instances.
+                  1. Session Lifecycle: refresh is single-flight per server instance; across
+                     instances the backend's replay window covers concurrent refreshes. A repeat
+                     with the old token after the window is still a reuse that logs the user out
+                     everywhere, so retries with the same token should stay inside the window.
+                     "Session expired" joins the list of 401s that clear the session.
+                  2. Scope: the refresh-coordination cache may be in-process; a shared store is no
+                     longer implied.
+                  MINOR: relaxes an existing rule without removing a principle; code built under
+                  1.5.0 still complies.
+Modified principles / sections:
+  - Scope & Repository Boundaries (refresh-coordination cache wording)
+  - Backend Integration Contract → Session Lifecycle (single-flight scope, replay window)
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no change needed
+  - .specify/templates/spec-template.md ✅ no change needed
+  - .specify/templates/tasks-template.md ✅ no change needed
+Follow-up: specs/001-auth-login-signup docs updated to match; the env check no longer requires the
+  Upstash variables on Vercel (tasks T128–T129).
+Previous amendment (1.4.0 → 1.5.0): Amendment raised by /speckit-analyze on 001-auth-login-signup
+                  (findings D2, D3).
                   1. Scope and Security → Session Storage now explicitly allow a short-lived,
                      encrypted, server-only refresh-coordination cache. Single-flight refresh on a
                      serverless runtime needs state shared across instances, which the letter of
@@ -11,17 +34,11 @@ Action:           Amendment raised by /speckit-analyze on 001-auth-login-signup 
                   2. Review Gates now define the gate for a test-first (Red) task, which by design
                      ends with failing tests that may not compile yet. PATCH-level clarification,
                      folded into this MINOR bump.
-Added sections: N/A
 Modified principles / sections:
   - Scope & Repository Boundaries (refresh-coordination cache is not "database access")
   - Security & Data Constraints → Session Storage (bounded exception for the coordination cache)
   - Development Workflow & Quality Gates → Review Gates (Red-task gate)
-Removed sections: N/A
-Templates requiring updates:
-  - .specify/templates/plan-template.md ✅ no change needed
-  - .specify/templates/spec-template.md ✅ no change needed
-  - .specify/templates/tasks-template.md ✅ no change needed (no review-gate text)
-Previous amendment (1.3.0 → 1.4.0): Session Lifecycle separates a refresh the backend rejects
+Earlier amendment (1.3.0 → 1.4.0): Session Lifecycle separates a refresh the backend rejects
   (401: clear the session) from a transient refresh failure (keep the session).
 Earlier amendment (1.2.0 → 1.3.0): aligned with the NestJS backend contract
   (docs/backend-readme.md): Backend-for-Frontend (BFF) session model, three-tier access, session
@@ -29,7 +46,7 @@ Earlier amendment (1.2.0 → 1.3.0): aligned with the NestJS backend contract
 Deferred TODOs:
   - TODO(BACKEND_RATE_LIMIT_IP): Backend rate limits are per client IP. Behind the BFF every
     request originates from the Next.js server, so all users would share one limit
-    (e.g. 5 logins/min globally). The backend MUST be configured to trust the proxy and derive
+    (e.g. 10 logins/min globally). The backend MUST be configured to trust the proxy and derive
     the client IP from X-Forwarded-For (and the BFF MUST forward it) before production.
 -->
 
@@ -53,8 +70,8 @@ components, route handlers, and server actions require in order to call that ext
   from the backend repository — never by guessing.
 - The Next.js server runtime acts as a **Backend-for-Frontend (BFF)**: it proxies calls to the
   external API and owns the session cookies (see _Backend Integration Contract_).
-- A **refresh-coordination cache** (a managed key-value store such as Redis, used only to make
-  token refresh single-flight across server instances, see _Session Storage_) is part of what the
+- A **refresh-coordination cache** (an in-process store, or a managed key-value store such as
+  Redis, used only to de-duplicate token refreshes, see _Session Storage_) is part of what the
   BFF needs in order to call the external API. It is not "database access": it MUST hold no domain
   data, and its entries MUST expire within seconds. Any other server-side persistence remains
   forbidden.
@@ -259,16 +276,21 @@ holes, or silent breakage.
   them; user identity and verification state come exclusively from `GET /auth/me`.
 - Refresh tokens are **single-use and rotate**. After every successful `POST /auth/refresh`, the
   BFF MUST persist the newly returned pair immediately, replacing the old one.
-- Token refresh MUST be **single-flight**: concurrent requests for the same session MUST share one
-  in-flight refresh. Replaying an already-rotated refresh token makes the backend revoke _all_ of
-  the user's sessions, so parallel refreshes are a defect, not a race to tolerate.
+- Token refresh MUST be **single-flight per server instance**: concurrent requests on one instance
+  for the same refresh token MUST share one in-flight refresh. Requests that land on different
+  instances MAY each refresh: the backend answers a repeat of a just-rotated refresh token within
+  20 seconds with the same new refresh token (its replay window), so no shared store is required.
+- Outside the replay window, sending a rotated refresh token again is a reuse, and the backend
+  revokes _all_ of the user's sessions. When the cookie already holds a newer refresh token, the
+  BFF MUST use that one. A retry with the same token after a lost or failed response SHOULD happen
+  within 20 seconds of the first attempt.
 - Refresh MUST happen only in places that can write cookies (Next.js proxy/middleware, route
   handlers, server actions) — never inside a Server Component.
 - On a `401` from a protected endpoint, the BFF MAY refresh once and retry once. If the backend
-  **rejects** the refresh (`401`: invalid, expired, revoked, or already used), the session cookies
-  MUST be cleared and the user redirected to login. A **transient** refresh failure (network
-  error, timeout, `5xx`, or `429`) MUST NOT clear the session: the refresh token may still be
-  valid, so the user gets a retryable error instead.
+  **rejects** the refresh (`401`: invalid, expired, revoked, already used, or session expired), the
+  session cookies MUST be cleared and the user redirected to login. A **transient** refresh
+  failure (network error, timeout, `5xx`, or `429`) MUST NOT clear the session: the refresh token
+  may still be valid, so the user gets a retryable error instead.
 - Logout MUST call `POST /auth/logout` with the refresh token and clear the session cookies
   regardless of the response.
 
@@ -349,4 +371,4 @@ alternative compliant path MUST be proposed.
 All amendments MUST update the version line and `Last Amended` date. The Sync Impact Report
 HTML comment at the top of this file MUST be updated with each revision.
 
-**Version**: 1.5.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-10-02
+**Version**: 1.6.0 | **Ratified**: 2026-09-08 | **Last Amended**: 2026-10-09
