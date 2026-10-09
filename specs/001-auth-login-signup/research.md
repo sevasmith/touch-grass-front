@@ -1,18 +1,18 @@
 # Phase 0 Research: Authentication — Login, Signup, Email Verification & Google Sign-In
 
-**Feature**: `001-auth-login-signup` | **Date**: 2026-10-01 | **Plan**: [plan.md](./plan.md)
+**Feature**: `001-auth-login-signup` | **Date**: 2026-10-01 (R2, R14 revised 2026-10-09) | **Plan**: [plan.md](./plan.md)
 
-Inputs: [spec.md](./spec.md), `.specify/memory/constitution.md` v1.5.0, `docs/backend-readme.md`,
+Inputs: [spec.md](./spec.md), `.specify/memory/constitution.md` v1.6.0, `docs/backend-readme.md`,
 Figma node `1:2` (file `xDvS7vVu6JmMLjG1J27idD`), and user decisions captured 2026-10-01:
 
-| Question                  | User decision                                                                                                                                |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Production runtime        | **Vercel / serverless**                                                                                                                      |
-| Refresh-coordinator store | **Upstash Redis** via the Vercel Marketplace, called over REST with `fetch` (no SDK). Approves this new third-party service (constitution I) |
-| Secrets check             | **On Vercel only**: the Upstash vars and `SESSION_CACHE_KEY` are required when the app runs on Vercel, never during `next build`             |
-| OTP entry                 | **shadcn `input-otp`** (approves the `input-otp` npm dependency)                                                                             |
-| Google button             | **One full-width labelled button**: Google logo + "Continue with Google"                                                                     |
-| Out-of-scope destinations | **Minimal placeholders**: protected `/map` with Log out; `/` → `/map`; footer and help icon are static, non-link decoration                  |
+| Question                  | User decision                                                                                                                                                                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production runtime        | **Vercel / serverless**                                                                                                                                                                                                                                                                                   |
+| Refresh-coordinator store | **Upstash Redis** via the Vercel Marketplace, called over REST with `fetch` (no SDK). Approves this new third-party service (constitution I). **Revised 2026-10-09: not used for now**; the in-memory store runs everywhere and the backend's 20-second refresh replay window covers other instances (R2) |
+| Secrets check             | ~~On Vercel only~~ **Revised 2026-10-09**: no secrets are required anywhere. `SESSION_CACHE_KEY` is required only if Upstash is set (R14)                                                                                                                                                                 |
+| OTP entry                 | **shadcn `input-otp`** (approves the `input-otp` npm dependency)                                                                                                                                                                                                                                          |
+| Google button             | **One full-width labelled button**: Google logo + "Continue with Google"                                                                                                                                                                                                                                  |
+| Out-of-scope destinations | **Minimal placeholders**: protected `/map` with Log out; `/` → `/map`; footer and help icon are static, non-link decoration                                                                                                                                                                               |
 
 ---
 
@@ -48,63 +48,78 @@ itself (R4).
 
 ## R2. Single-flight, rotation-safe refresh on Vercel (serverless)
 
-**Problem**: Refresh tokens are single-use. If any refresh is replayed, the backend revokes **all**
-of the user's sessions. On Vercel, concurrent requests from one browser can land on different
-function instances. That rules out an in-process lock. There is also the **laggard request**: a
-request sent with the _old_ cookie just before the browser applied the new `Set-Cookie`. It would
-replay a rotated token even when there was only one refresh.
+**Revised 2026-10-09.** The first version of this decision provisioned Upstash Redis so that refresh
+was single-flight across every Vercel instance. The backend has since added a **20-second replay
+window** to `POST /auth/refresh` (`docs/backend-readme.md`), and Upstash is dropped for now.
 
-**Decision**: Use a **distributed refresh coordinator** on **Upstash Redis**, called over its
-**REST API with the platform `fetch`**. This needs no SDK and so adds no npm dependency. All keys
-are derived from `sha256(oldRefreshToken)`:
+**Problem**: Refresh tokens are single-use and rotate. Sending a rotated token again revokes
+**all** of the user's sessions, except within 20 seconds of the rotation: there the backend answers
+`200` with the **same** new refresh token (and a freshly signed access token). On Vercel, concurrent
+requests from one browser can land on different function instances. There is also the **laggard
+request**: a request sent with the _old_ cookie just before the browser applied the new
+`Set-Cookie`.
+
+**Decision**: A **refresh coordinator that is single-flight within each instance**, backed by an
+in-memory store. Across instances, the backend's replay window gives every parallel or laggard
+refresh the same new refresh token, so no shared store is needed. All keys are derived from
+`sha256(oldRefreshToken)`:
 
 1. Check `rt:result:{h}` first. If it is present, use the cached outcome. This handles laggards and
-   lock losers.
+   lock losers on the same instance without another backend call.
 2. Otherwise `SET rt:lock:{h} <requestId> NX PX 10000`.
    - **Winner**: call `POST /auth/refresh`.
      - `200`: write `rt:result:{h}` = encrypted `{ kind: "ok", pair }` with `PX 30000`, then return
        the pair.
-     - `401`: write `rt:result:{h}` = `{ kind: "revoked" }` with `PX 30000`, then return revoked.
+     - `401` (including `Session expired`, the backend's 90-day absolute session lifetime): write
+       `rt:result:{h}` = `{ kind: "revoked" }` with `PX 30000`, then return revoked.
      - Transient failure (network, `5xx`, `429`): `DEL rt:lock:{h}`, write no result, and return a
        transient error. The session is **not** cleared.
    - **Loser**: poll `rt:result:{h}` every 100 ms for up to 4 s. If the lock disappears without a
      result, retry acquiring it once. If it times out, return a transient error.
 3. The cached pair is encrypted with **AES-256-GCM via Web Crypto** (`globalThis.crypto.subtle`,
-   with no dependency), keyed by `SESSION_CACHE_KEY`. This means Redis never holds plaintext tokens. Together with the
-   hashed key and the 30 s TTL, this is exactly the refresh-coordination exception in constitution
-   v1.5.0 (Scope; Security → Session Storage).
+   with no dependency). Without `SESSION_CACHE_KEY`, each process generates a random key, which is
+   enough because the memory store is per process too. Together with the hashed key and the 30 s
+   TTL, this is the refresh-coordination exception in constitution v1.6.0 (Scope; Security →
+   Session Storage).
 
 The coordinator depends on a tiny `KeyValueStore` port (`get`, `setNx`, `set`, `del`). It has two
 adapters:
 
-- `upstashStore`: REST over `fetch`, with Zod-validated responses. Required on Vercel deployments
-  (`VERCEL=1`), where requests from one browser can reach different instances. The env check fails
-  when a deployment starts without the Upstash variables. It is skipped during `next build` (Next
-  sets `NEXT_PHASE=phase-production-build`), so builds need no secrets.
-- `memoryStore`: a `globalThis`-scoped `Map` with TTLs, used for local `next dev`, local
-  `next build` / `next start` (a single process), and Vitest.
+- `memoryStore`: a `globalThis`-scoped `Map` with TTLs. Used everywhere for now: Vercel, local
+  `next dev` / `next build` / `next start`, and Vitest.
+- `upstashStore`: REST over `fetch`, with Zod-validated responses. Built before the backend added
+  the replay window and kept, unused, so a shared store can be switched on by setting both Upstash
+  variables and `SESSION_CACHE_KEY` (R14). It would make refresh single-flight across instances
+  too and save the duplicate backend calls.
 
 Both adapters run through the **same** coordinator code path, and the tests exercise it with the
 memory store.
 
-**Rationale**: This is the smallest design that meets FR-011–FR-013 and SC-006 on serverless. The
-30 s result TTL covers laggards. It is far shorter than the refresh TTL, and the old token is dead
-anyway. The 10 s lock TTL is longer than the 8 s backend timeout (R9).
+**Known limit**: after a transient failure where the backend did rotate the token (the response
+was lost), the next request retries with the old token. Within 20 seconds the replay window answers
+it; later, the backend treats it as a reuse and ends every session. This was worse before the
+window existed (any retry was a reuse), and the coordinator cannot tell a lost response from a
+refresh that never happened.
+
+**Rationale**: The replay window removes the cross-instance problem the shared store solved, so the
+in-memory store is the smallest design that meets FR-011–FR-013 and SC-006. The 30 s result TTL
+covers laggards on the same instance. The 10 s lock TTL is longer than the 8 s backend timeout
+(R9).
 
 **Alternatives considered**:
 
-- _In-process `Map<token, Promise>`_: single-flight only per instance. Rejected for Vercel.
+- _Upstash Redis as a shared store_ (the original decision): single-flight across instances, but a
+  new service and secrets that the replay window makes unnecessary for now.
+- _No coordinator, rely on the replay window alone_: works, but every concurrent request on an
+  instance would call the backend and spend the 20/min refresh rate limit. The backend recommends
+  de-duplicating where possible.
 - _`@upstash/redis` SDK_: convenient, but it is a new dependency for 4 commands. Plain `fetch` is
   enough.
-- _Vercel KV / Edge Config_: Vercel KV is Upstash under the hood (same REST protocol), and Edge
-  Config is not write-optimised. Use an Upstash database provisioned via the Vercel Marketplace.
 - _Proactive refresh using a stored expiry_: tokens are opaque and must not be decoded, and a
   password reset invalidates tokens early anyway. Rejected. Refresh is reactive, on `401`.
 
-**Infra action required** (tasks T008a): Provision an Upstash Redis database (Vercel Marketplace
-integration) for Preview and Production, then set `UPSTASH_REDIS_REST_URL`,
-`UPSTASH_REDIS_REST_TOKEN`, and `SESSION_CACHE_KEY` in both environments. Do this before the first
-deploy that includes US1, because a deployment without them fails on its first request.
+**Infra action required** (tasks T008a): none for the coordinator. Only `NEXT_PUBLIC_API_URL`
+needs to be set on Vercel (R14).
 
 ## R3. Session cookies
 
@@ -328,14 +343,15 @@ Validated with Zod in `src/shared/config/env.server.ts` (server) and `env.public
 | Var                        | Scope  | Required         | Purpose                                     |
 | -------------------------- | ------ | ---------------- | ------------------------------------------- |
 | `NEXT_PUBLIC_API_URL`      | public | always           | Backend base URL (Google nav + BFF calls)   |
-| `UPSTASH_REDIS_REST_URL`   | server | on Vercel        | Refresh coordinator store                   |
-| `UPSTASH_REDIS_REST_TOKEN` | server | on Vercel        | Refresh coordinator store auth              |
-| `SESSION_CACHE_KEY`        | server | on Vercel        | base64 32-byte AES-GCM key for cached pairs |
+| `UPSTASH_REDIS_REST_URL`   | server | no (unused)      | Optional shared coordinator store           |
+| `UPSTASH_REDIS_REST_TOKEN` | server | no (unused)      | Optional shared coordinator store auth      |
+| `SESSION_CACHE_KEY`        | server | with Upstash     | base64 32-byte AES-GCM key for cached pairs |
 | `SESSION_COOKIE_MAX_AGE`   | server | no (default 30d) | Cookie lifetime in seconds                  |
 
-"On Vercel" means the app is running on a Vercel deployment (`VERCEL=1`). The check runs when the
-server starts and is skipped during `next build` (`NEXT_PHASE=phase-production-build`), so local
-builds, the pre-push hook, and CI builds need no secrets. Set both Upstash variables or neither.
+No secrets are required anywhere, so local builds, the pre-push hook, CI builds, and Vercel
+deployments need only `NEXT_PUBLIC_API_URL`. Set both Upstash variables or neither. If they are
+set, `SESSION_CACHE_KEY` is required too, because instances sharing a store must share the key that
+encrypts its entries.
 
 Backend counterpart settings: `FRONTEND_URL` = the frontend origin (scheme must match). The frontend
 no longer needs to be in `CORS_ORIGINS`, because all calls are server-side.
@@ -352,7 +368,7 @@ and remains a production blocker owned by the backend repo. It does not block th
 - **Unit (Vitest)**: Zod schemas; the error mapper (every backend status and message → `AuthErrorCode`);
   the refresh coordinator with `memoryStore` and fake timers (winner/loser, laggard, revoked,
   transient, lock-vanish); `authedFetch` (401→refresh→retry once, verify-email code 401 not retried,
-  403 mapping); the AES-GCM round-trip; the Upstash adapter against a mocked `fetch`.
+  403 mapping); the AES-GCM round-trip; the (optional) Upstash adapter against a mocked `fetch`.
 - **Server Actions**: `vi.mock("next/headers")` for `cookies()` and `headers()`, plus a mocked
   `fetch`. Assert cookie writes and returned results.
 - **Proxy**: call the handler with `new NextRequest(url, { headers: { cookie } })` and a mocked

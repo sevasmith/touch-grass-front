@@ -83,7 +83,7 @@ byte-identical either way (SC-008).
 
 ### Refresh coordinator records — `src/entities/session/lib/refresh-coordinator.ts`
 
-Stored in the `KeyValueStore` (Upstash on Vercel deployments, memory locally and in tests). `h = hex(sha256(oldRefreshToken))`.
+Stored in the `KeyValueStore`: the in-memory store, per server instance, everywhere for now (Upstash only if it is ever configured, research R2). `h = hex(sha256(oldRefreshToken))`.
 
 | Key             | Value                                                 | TTL  | Written by               |
 | --------------- | ----------------------------------------------------- | ---- | ------------------------ |
@@ -93,15 +93,17 @@ Stored in the `KeyValueStore` (Upstash on Vercel deployments, memory locally and
 `RefreshOutcomeRecord` (Zod, discriminated on `kind`):
 
 - `{ kind: "ok", pair: TokenPair }`
-- `{ kind: "revoked" }`, for any `401` from `/auth/refresh` (invalid, revoked, expired, already used)
+- `{ kind: "revoked" }`, for any `401` from `/auth/refresh` (invalid, revoked, expired, already used, session expired)
 
 `RefreshOutcome` (returned to callers, never stored) = `RefreshOutcomeRecord | { kind: "transient" }`.
 
 **Invariants**:
 
-- At most one `POST /auth/refresh` per old refresh token across all instances (SC-006).
-- Any request carrying an old token within 30 s of its rotation gets the **new** pair from the cache
-  instead of replaying the old one.
+- At most one `POST /auth/refresh` per old refresh token on each instance (SC-006). Other instances
+  may each send one; the backend's 20-second replay window answers them with the same new refresh
+  token.
+- Any request carrying an old token within 30 s of its rotation, on the same instance, gets the
+  **new** pair from the cache instead of sending the old one again.
 - A `transient` outcome is never cached, and the cookies are left untouched (FR-013).
 
 ### KeyValueStore port — `src/shared/lib/kv/`
@@ -113,8 +115,8 @@ set(key, value, ttlMs) → void
 del(key) → void
 ```
 
-Adapters: `upstashStore` (REST via `fetch`; responses validated with
-`UpstashResponseSchema = { result: unknown } | { error: string }`) and `memoryStore`.
+Adapters: `memoryStore` (used everywhere for now) and `upstashStore` (optional, unused for now; REST
+via `fetch`; responses validated with `UpstashResponseSchema = { result: unknown } | { error: string }`).
 
 ---
 

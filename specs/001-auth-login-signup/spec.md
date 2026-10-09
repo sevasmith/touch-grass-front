@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-30
 
-**Status**: Approved (revised and re-approved 2026-10-01; revised 2026-10-02 with user-approved fixes from `/speckit-analyze`)
+**Status**: Approved (revised and re-approved 2026-10-01; revised 2026-10-02 with user-approved fixes from `/speckit-analyze`; revised 2026-10-09 for the backend's 20-second refresh replay window, constitution v1.6.0)
 
 **Input**: User description: "Build the Login and Signup pages using our custom authentication flow." Updated to align frontend flows with the NestJS backend authentication model documented in `docs/backend-readme.md`. Revised 2026-10-01 to align with constitution v1.3.0 (Backend-for-Frontend session model, three-tier access, URL-borne token handling).
 
@@ -134,9 +134,10 @@ Users who forgot their password (or Google users who never set one) request a re
 ### Edge Cases
 
 - **Backend unreachable / network timeout** during any auth call: show a non-crashing error state with a retry affordance; never a blank screen.
-- **Refresh-token rotation**: every successful refresh returns a brand-new token pair and invalidates the old refresh token immediately. The frontend must always persist the newest refresh token and never reuse a prior one.
-- **Concurrent refreshes**: several requests discovering an expired access token at the same moment must share a single refresh; a second parallel refresh would replay a rotated token and cause the backend to log out **all** of the user's sessions.
+- **Refresh-token rotation**: every successful refresh returns a brand-new token pair and invalidates the old refresh token. For 20 seconds after the rotation the backend answers a repeat of the old token with the same new refresh token (its replay window); after that the old token is dead. The frontend must always persist the newest refresh token and never reuse a prior one outside that window.
+- **Concurrent refreshes**: several requests discovering an expired access token at the same moment on one server instance must share a single refresh. Requests on different server instances may each refresh; the backend's replay window gives them all the same new refresh token, so the user stays logged in.
 - **Refresh-token reuse / revocation**: if a refresh call returns "revoked" or "already used", the backend may have logged out **all** of the user's sessions; the frontend must clear the session and route to login.
+- **Session expired**: a session reaches the backend's absolute lifetime (90 days from the login that started it) and the refresh returns `401 Session expired`; the frontend clears the session and routes to login like any other rejected refresh.
 - **Transient refresh failure** (network error, `5xx`, `429`): the session is **not** cleared; the user sees a retryable error. Only a `401` refresh outcome ends the session.
 - **Access token invalidated by password reset**: an access token issued before a password reset is rejected even if unexpired; the follow-up refresh also fails (all refresh tokens were revoked), so the user is routed to login.
 - **Verification code rejected vs. session rejected**: `verify-email` returns `401` both for code errors and for an invalid session. The two are distinguished by the backend message; a code error is shown inline and is never refreshed-and-retried (a retry would consume a second attempt). If the access token had expired, the first request is rejected as a session failure before the code is checked; the session is refreshed and the code re-sent once, and a code error on that retry is shown inline like any other (it does **not** end the session).
@@ -180,8 +181,8 @@ Users who forgot their password (or Google users who never set one) request a re
 - **FR-009**: System MUST treat a successful authentication as returning an opaque `{ accessToken, refreshToken }` pair and MUST store both only in a server-held session (cookies set by the frontend's server side, not readable by browser scripts). Tokens MUST NEVER be returned to, stored in, or readable by browser JavaScript.
 - **FR-010**: System MUST make all authenticated backend calls through the frontend's server side, which attaches the access token; the access token MUST be treated as opaque (no decoding of claims). User identity and verification state come exclusively from the backend's current-user endpoint.
 - **FR-011**: System MUST refresh the session by exchanging the current refresh token, MUST persist the newly returned pair immediately, and MUST discard the previous refresh token (single-use rotation).
-- **FR-012**: System MUST ensure only one refresh is in flight per session at a time; concurrent requests needing a refresh MUST share that single refresh.
-- **FR-013**: System MUST, when a protected request fails due to a missing/expired/invalidated access token, refresh once and retry the request once; if the refresh fails with a `401` (revoked, already used, expired, or invalid), it MUST clear the session and route the user to `/login`. Transient refresh failures (network, `5xx`, `429`) MUST NOT clear the session.
+- **FR-012**: System MUST ensure only one refresh is in flight per session on each server instance; concurrent requests on that instance needing a refresh MUST share that single refresh. Refreshes of the same session on different server instances rely on the backend's 20-second replay window, which returns the same new refresh token to each of them.
+- **FR-013**: System MUST, when a protected request fails due to a missing/expired/invalidated access token, refresh once and retry the request once; if the refresh fails with a `401` (revoked, already used, expired, invalid, or session expired), it MUST clear the session and route the user to `/login`. Transient refresh failures (network, `5xx`, `429`) MUST NOT clear the session.
 - **FR-014**: System MUST NOT apply refresh-and-retry to requests whose `401` describes a business outcome rather than an invalid session — in particular verification-code errors (which would consume another attempt) and public auth endpoints (login, reset, Google exchange).
 - **FR-015**: System MUST support logout by sending the stored refresh token to the backend and clearing the session regardless of the response.
 
@@ -229,7 +230,7 @@ Users who forgot their password (or Google users who never set one) request a re
 
 ### Key Entities _(include if feature involves data)_
 
-- **Session Token Pair**: An opaque `accessToken` (short-lived, sent as `Bearer` by the frontend's server side) and an opaque `refreshToken` (single-use, rotates on every refresh). Held only in the server-held session, never visible to browser scripts. The newest refresh token supersedes all prior ones; a reused refresh token invalidates all sessions.
+- **Session Token Pair**: An opaque `accessToken` (short-lived, sent as `Bearer` by the frontend's server side) and an opaque `refreshToken` (single-use, rotates on every refresh). Held only in the server-held session, never visible to browser scripts. The newest refresh token supersedes all prior ones; a refresh token reused outside the backend's 20-second replay window invalidates all sessions.
 - **Current User**: `{ id, email, emailVerified }` — the minimal profile used to decide between `/verify-email` and `/map`; the only session data visible to the browser.
 - **Verification Code State**: A 6-digit code with a short lifetime, at most 5 attempts, one active code at a time, and a 60-second resend cooldown (all enforced by the backend; the frontend reflects the resulting states).
 - **OAuth Handoff Token**: A single-use, short-lived token delivered on the completion page URL, exchanged once for a token pair, and stripped from history immediately.
@@ -245,7 +246,7 @@ Users who forgot their password (or Google users who never set one) request a re
 - **SC-003**: Users see field-level validation feedback within 300 ms of leaving an invalid input.
 - **SC-004**: 95% of login/signup attempts with valid credentials succeed on the first try without client-side errors.
 - **SC-005**: Every backend authentication state documented in the API (invalid credentials, unverified email, rate limits, verification-code failures, refresh rotation/reuse, and all Google and reset error codes) maps to a distinct, understandable user-facing outcome — verified by walking each state.
-- **SC-006**: 100% of successful refreshes result in the newest token pair being persisted and the old refresh token discarded, with no reuse of a rotated token — including when many requests need a refresh at the same moment.
+- **SC-006**: 100% of successful refreshes result in the newest token pair being persisted and the old refresh token discarded, with no reuse of a rotated token outside the backend's 20-second replay window — including when many requests need a refresh at the same moment, and none of them logs the user out.
 - **SC-007**: The Google handoff token is exchanged exactly once, and neither the handoff token nor the reset token remains in the browser URL/history after its page settles.
 - **SC-010**: Session tokens are never readable by browser scripts on any page — verified by inspecting browser-accessible storage and script-readable cookies after login, signup, and Google sign-in.
 - **SC-011**: A wrong verification code consumes exactly one of the 5 attempts per submission.
@@ -255,8 +256,8 @@ Users who forgot their password (or Google users who never set one) request a re
 ## Assumptions
 
 - The backend base URL is provided to the frontend via environment configuration and validated at the boundary; secrets stay server-side. The public API base URL is exposed to the browser only so it can navigate to the Google entry point; it is not a secret.
-- Per the constitution, the frontend's server side acts as a Backend-for-Frontend: it proxies backend calls and owns the session cookies. The exact mechanism (route handlers, server actions, middleware) is deferred to planning; the spec requires only that tokens never reach browser scripts, the newest refresh token always wins, refreshes are single-flight, and the session is cleared on logout/revocation.
-- **Dependency (open, constitution TODO `BACKEND_RATE_LIMIT_IP`)**: backend rate limits are per client IP. Behind the Backend-for-Frontend every request originates from the frontend server, so all users would share one limit (e.g., 5 logins/minute globally). Before production the backend MUST trust the proxy and derive the client IP from `X-Forwarded-For`, and the frontend server MUST forward it.
+- Per the constitution, the frontend's server side acts as a Backend-for-Frontend: it proxies backend calls and owns the session cookies. The exact mechanism (route handlers, server actions, middleware) is deferred to planning; the spec requires only that tokens never reach browser scripts, the newest refresh token always wins, refreshes are single-flight on each server instance (the backend's replay window covers the rest), and the session is cleared on logout/revocation.
+- **Dependency (open, constitution TODO `BACKEND_RATE_LIMIT_IP`)**: backend rate limits are per client IP. Behind the Backend-for-Frontend every request originates from the frontend server, so all users would share one limit (e.g., 10 logins/minute globally). Before production the backend MUST trust the proxy and derive the client IP from `X-Forwarded-For`, and the frontend server MUST forward it.
 - The signup form includes a client-side password-confirmation field for usability even though the backend accepts only `email` and `password`.
 - There is no signup frame in Figma. Until one exists, the signup page reuses the login layout as-is (image on the left, form on the right, same `AuthShell`), with the heading **"Join Touch Grass"** and the subtitle **"Create an account to start your journey."** (login uses "Welcome to Touch Grass" / "Sign in to continue your journey.").
 - The Google completion route path is `/oauth/complete`, matching the backend's configured `FRONTEND_URL` redirect target. Because the handoff-token exchange is performed server-side, it does not depend on the backend's `CORS_ORIGINS`.

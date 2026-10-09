@@ -59,6 +59,9 @@ the stale one.
 
 See [research.md §R2](../research.md#r2-single-flight-rotation-safe-refresh-on-vercel-serverless)
 and [data-model.md §2](../data-model.md#refresh-coordinator-records--srcentitiessessionlibrefresh-coordinatorts).
+`store` is the in-memory store of the current instance, so this is single-flight per instance.
+Refreshes of the same token on other instances are answered by the backend's 20-second replay
+window with the same new refresh token.
 
 ```text
 refresh(oldRt):
@@ -67,7 +70,7 @@ refresh(oldRt):
   if store.setNx(rt:lock:h, uuid, 10_000):
      r = POST /auth/refresh { refreshToken: oldRt }
      200 → store.set(rt:result:h, enc({kind:ok,pair}), 30_000); return ok
-     401 → store.set(rt:result:h, enc({kind:revoked}), 30_000); return revoked
+     401 → store.set(rt:result:h, enc({kind:revoked}), 30_000); return revoked  // incl. Session expired
      else→ store.del(rt:lock:h); return transient
   else poll store.get(rt:result:h) every 100 ms ≤ 4 s
      found → return decrypted

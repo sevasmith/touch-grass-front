@@ -80,7 +80,7 @@ assets.
   - map `--font-sans: var(--font-hanken-grotesk)` and `--font-heading: var(--font-manrope)` in `@theme inline`
   - `--input`, `--ring`, and `--placeholder` deliberately differ from Figma so they pass WCAG AA (spec Assumptions: Figma deviations). `--border` is for decorative lines only; inputs and OTP slots use `border-input`
 - [x] T008 Replace Geist in `app/layout.tsx` (depends on T007). Load `Manrope` (weights 600, 700, `variable: "--font-manrope"`) and `Hanken_Grotesk` (weights 400, 600, `variable: "--font-hanken-grotesk"`) from `next/font/google`, apply both variables to `<html>`, add `font-sans bg-background text-foreground` to `<body>`, and set `metadata` to `{ title: "Touch Grass", description: "Touch Grass" }`
-- [ ] T008a **Manual (project owner)**: provision Upstash Redis for the Vercel project through the Vercel Marketplace for both Preview and Production, and set `SESSION_CACHE_KEY` (`openssl rand -base64 32`) in both environments (research R2, R14). Do it before the first deploy that includes US1: a Vercel deployment without these variables fails on its first request (T010). Local work and CI builds don't need them
+- [ ] T008a **Manual (project owner)**: set `NEXT_PUBLIC_API_URL` to the deployed backend's URL for both Preview and Production in the Vercel project (research R14), and point the backend's `FRONTEND_URL` at the preview URL. _Revised 2026-10-09_: Upstash Redis and `SESSION_CACHE_KEY` are no longer needed (research R2, T128–T129)
 
 **Checkpoint**: `pnpm typecheck`, `pnpm lint`, and `pnpm test:run` pass. Primitives live in `src/shared/ui/`.
 
@@ -104,9 +104,11 @@ the placeholder routes. Every user story depends on this phase.
   - setting only one of `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` fails
   - `SESSION_CACHE_KEY`, when present, must base64-decode to exactly 32 bytes
 
+  _Superseded 2026-10-09 by T128_: the Vercel-only requirement is gone.
+
   Also write failing tests in `src/shared/config/env.public.test.ts` for `PublicEnvSchema` (URL required)
 
-- [x] T010 Implement `src/shared/config/env.server.ts` (`import "server-only"`; export `ServerEnvSchema`, which reads `VERCEL` and `NEXT_PHASE` and applies the T009 rules in a `superRefine`, and `serverEnv = ServerEnvSchema.parse(process.env)`, so a misconfigured Vercel deployment fails on its first request while `next build` and local runs need no secrets) and `src/shared/config/env.public.ts` (export `PublicEnvSchema` and `publicEnv = PublicEnvSchema.parse({ NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL })`; the literal reference lets Next inline it). Variables per research R14
+- [x] T010 Implement `src/shared/config/env.server.ts` (`import "server-only"`; export `ServerEnvSchema`, which reads `VERCEL` and `NEXT_PHASE` and applies the T009 rules in a `superRefine`, and `serverEnv = ServerEnvSchema.parse(process.env)`, so a misconfigured Vercel deployment fails on its first request while `next build` and local runs need no secrets; _superseded 2026-10-09 by T129_) and `src/shared/config/env.public.ts` (export `PublicEnvSchema` and `publicEnv = PublicEnvSchema.parse({ NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL })`; the literal reference lets Next inline it). Variables per research R14
 - [x] T011 [P] Write failing tests in `src/shared/api/api-error.schema.test.ts`:
   - `ApiErrorSchema` accepts a `message` that is a `string` or a `string[]`
   - it rejects a `statusCode` outside 400–599
@@ -565,6 +567,11 @@ and 21–23).
 - [x] T125 [P] Add a "Running locally" section to `README.md`: the env vars from research R14 (`NEXT_PUBLIC_API_URL`; the Upstash vars and `SESSION_CACHE_KEY` from `openssl rand -base64 32`, optional locally and required on Vercel), the backend `FRONTEND_URL` requirement, the `localhost` (not `127.0.0.1`) note, and the production blocker TODO `BACKEND_RATE_LIMIT_IP`
 - [x] T126 Run the automated gates from quickstart.md (`pnpm test:run`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, which needs no Upstash vars) and fix any failures
 - [ ] T127 Run the 25 manual scenarios in `specs/001-auth-login-signup/quickstart.md` against the local backend, including the DevTools SC-010 cookie and storage checks, scenario 13 (three tabs → exactly one `/auth/refresh`), and scenario 25 (Figma pixel comparison at 1280×1024 and 375px, no CLS, keyboard-only pass through every form and the OTP input). Record any deviations in the PR description
+- [x] T128 Write failing tests in `src/shared/config/env.server.test.ts` for the backend's 20-second refresh replay window (research R2, R14; constitution v1.6.0), replacing the T009 Vercel cases:
+  - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, and `SESSION_CACHE_KEY` are optional everywhere, including on a Vercel deployment (`VERCEL: "1"`) with `NODE_ENV: "production"`
+  - an empty value is treated as unset
+  - setting both Upstash variables without `SESSION_CACHE_KEY` fails, because instances sharing a store must share its encryption key
+- [x] T129 Update `src/shared/config/env.server.ts` to pass T128: drop `VERCEL`, `NEXT_PHASE`, and the Vercel-only check; require `SESSION_CACHE_KEY` when Upstash is set. Update the comments in `src/shared/lib/kv/get-kv-store.ts` and `src/entities/session/lib/crypto.ts`
 
 ---
 

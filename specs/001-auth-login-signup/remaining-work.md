@@ -83,38 +83,50 @@ text, so reviewers know they are on purpose:
 
 Add the T127 results from Step 3 as well.
 
-## Step 5: Set up Vercel before the first deploy (T008a)
+## Step 5: Stop requiring Upstash on Vercel (code change)
 
-The deployed app uses Upstash Redis so token refreshes stay safe across Vercel's servers. A
-deployment without these settings fails on its first request.
+**We are not using Upstash Redis for now.** The backend changed `POST /auth/refresh` (see
+[`docs/backend-readme.md`](../../docs/backend-readme.md#post-authrefresh)): if the same refresh
+token is sent again within **20 seconds** of being rotated, it answers `200` with the **same** new
+refresh token instead of logging the user out everywhere. Two Vercel instances that refresh the
+same session at the same moment therefore both get a valid pair, which is the problem the shared
+Upstash store solved. Inside one instance the refresh coordinator still de-duplicates refreshes
+with its in-memory store, as the backend recommends.
 
-1. In the Vercel dashboard, open the project → **Storage** (Marketplace) → add **Upstash Redis**
-   and connect it to both **Preview** and **Production**. This sets `UPSTASH_REDIS_REST_URL` and
-   `UPSTASH_REDIS_REST_TOKEN` for you. If the integration names them differently (for example
-   `KV_REST_API_URL`), add copies under the names above.
-2. Run `openssl rand -base64 32` on your computer and add the output as `SESSION_CACHE_KEY`, for
-   Preview and Production.
-3. Add `NEXT_PUBLIC_API_URL` set to the deployed backend's URL, for Preview and Production. CI
+**Done (T128–T129).** `src/shared/config/env.server.ts` no longer requires `UPSTASH_REDIS_REST_URL`,
+`UPSTASH_REDIS_REST_TOKEN`, or `SESSION_CACHE_KEY` on Vercel, so a deployment needs only
+`NEXT_PUBLIC_API_URL`. The Upstash adapter stays in the code and is used only if both of its
+variables are set, and then `SESSION_CACHE_KEY` is required too. Without the key, each instance
+generates its own random key at startup, which is fine because the in-memory cache is never shared
+between instances.
+
+## Step 6: Set up Vercel before the first deploy (T008a)
+
+T008a was revised: Upstash and `SESSION_CACHE_KEY` are no longer needed. Only the backend address
+is:
+
+1. Add `NEXT_PUBLIC_API_URL` set to the deployed backend's URL, for Preview and Production. CI
    reads it with `vercel pull`.
-4. Point the backend's `FRONTEND_URL` at the Vercel preview URL (or a stable preview alias).
-5. Tick T008a in `tasks.md`.
+2. Point the backend's `FRONTEND_URL` at the Vercel preview URL (or a stable preview alias).
+3. Tick T008a in `tasks.md`.
 
-## Step 6: Before going to production (backend repository)
+## Step 7: Before going to production (backend repository)
 
 This is not a frontend task, but production must wait for it (constitution TODO
-`BACKEND_RATE_LIMIT_IP`). The backend limits requests per client IP. All requests now come from
-the Next.js server, so every user would share one limit (for example 5 logins per minute for
-everyone). The frontend already sends the real client IP in `X-Forwarded-For`; the backend must
-be configured to trust that header (`trust proxy` in NestJS/Express) and use it for rate
-limiting.
+`BACKEND_RATE_LIMIT_IP`, and "Must implement now" in the backend's `docs/known-gaps.md`). The
+backend limits requests per client IP. All requests now come from the Next.js server, so every user
+would share one limit (for example 10 logins per minute for everyone). The frontend already sends
+the real client IP in `X-Forwarded-For`; the backend must be configured to trust that header
+(`trust proxy` in NestJS/Express) and use it for rate limiting.
 
 ---
 
 ## Checklist
 
-- [ ] Step 1: `.env.local` created
-- [ ] Step 2: backend running on `localhost:6767`
-- [ ] Step 3: 25 quickstart scenarios pass → tick **T127** in `tasks.md`
-- [ ] Step 4: branch pushed, PR opened with the deviations and T127 results
-- [ ] Step 5: Vercel variables set → tick **T008a** in `tasks.md`
-- [ ] Step 6: backend trusts `X-Forwarded-For` before production
+- [x] Step 1: `.env.local` created
+- [x] Step 2: backend running on `localhost:6767`
+- [x] Step 3: 25 quickstart scenarios pass → tick **T127** in `tasks.md`
+- [x] Step 4: branch pushed, PR opened with the deviations and T127 results
+- [x] Step 5: Upstash variables no longer required on Vercel (T128–T129)
+- [ ] Step 6: `NEXT_PUBLIC_API_URL` set on Vercel → tick **T008a** in `tasks.md`
+- [ ] Step 7: backend trusts `X-Forwarded-For` before production

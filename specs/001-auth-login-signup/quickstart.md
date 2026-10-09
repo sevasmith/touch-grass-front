@@ -18,10 +18,7 @@ shapes are in [data-model.md](./data-model.md).
 
    ```bash
    NEXT_PUBLIC_API_URL=http://localhost:6767
-   # Optional locally (memory store is used when absent). Required on Vercel:
-   # UPSTASH_REDIS_REST_URL=...
-   # UPSTASH_REDIS_REST_TOKEN=...
-   # SESSION_CACHE_KEY=$(openssl rand -base64 32)
+   # Nothing else is needed. Upstash Redis is not used for now (research R2).
    ```
 
 3. Start the frontend with `pnpm install` and then `pnpm dev`. Open **`http://localhost:3000`**. Use
@@ -33,7 +30,7 @@ shapes are in [data-model.md](./data-model.md).
 pnpm test:run      # all unit/component/action/proxy tests green
 pnpm typecheck     # no TS errors (no `any`)
 pnpm lint          # ESLint clean
-pnpm build         # production build succeeds with no Upstash vars (checked when the app starts on Vercel)
+pnpm build         # production build succeeds with only NEXT_PUBLIC_API_URL set
 ```
 
 ## Manual scenarios
@@ -72,11 +69,11 @@ and `localStorage` and `sessionStorage` must contain no tokens (SC-010).
 
 ## Vercel preview validation (before production)
 
-- Provision **Upstash Redis** through the Vercel Marketplace, and set `UPSTASH_REDIS_REST_URL`,
-  `UPSTASH_REDIS_REST_TOKEN`, `SESSION_CACHE_KEY`, and `NEXT_PUBLIC_API_URL` (tasks T008a). A
-  deployment without them fails on its first request.
+- Set `NEXT_PUBLIC_API_URL` for Preview and Production (tasks T008a). No other variables are
+  needed: Upstash Redis is not used for now (research R2).
 - Point the backend's `FRONTEND_URL` at the preview URL, or at a stable preview alias.
-- Repeat scenario 13 against the preview. In the Upstash data browser, `rt:result:*` keys appear and
-  expire after about 30 s.
+- Repeat scenario 13 against the preview. The tabs may reach different instances, so the backend
+  log can show more than one `/auth/refresh` (the backend's 20-second replay window answers the
+  repeats with the same refresh token). All tabs must load and nobody is logged out everywhere.
 - **Blocked for production** until the backend trusts `X-Forwarded-For` (constitution TODO
   `BACKEND_RATE_LIMIT_IP`).

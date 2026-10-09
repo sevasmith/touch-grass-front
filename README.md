@@ -13,22 +13,20 @@ backend API contract is documented in [`docs/backend-readme.md`](docs/backend-re
 
    ```bash
    NEXT_PUBLIC_API_URL=http://localhost:6767
-   # Optional locally (an in-memory store is used when they are absent). Required on Vercel:
-   # UPSTASH_REDIS_REST_URL=...
-   # UPSTASH_REDIS_REST_TOKEN=...
-   # SESSION_CACHE_KEY=...   # generate with: openssl rand -base64 32
    ```
 
    | Variable                   | Required         | Purpose                                                 |
    | -------------------------- | ---------------- | ------------------------------------------------------- |
    | `NEXT_PUBLIC_API_URL`      | always           | Backend base URL (Google sign-in link and server calls) |
-   | `UPSTASH_REDIS_REST_URL`   | on Vercel        | Refresh-coordinator store                               |
-   | `UPSTASH_REDIS_REST_TOKEN` | on Vercel        | Refresh-coordinator store auth                          |
-   | `SESSION_CACHE_KEY`        | on Vercel        | Base64 of 32 random bytes; encrypts cached token pairs  |
+   | `UPSTASH_REDIS_REST_URL`   | no (unused)      | Optional shared refresh-coordinator store               |
+   | `UPSTASH_REDIS_REST_TOKEN` | no (unused)      | Optional shared refresh-coordinator store auth          |
+   | `SESSION_CACHE_KEY`        | with Upstash     | Base64 of 32 random bytes; encrypts cached token pairs  |
    | `SESSION_COOKIE_MAX_AGE`   | no (default 30d) | Session cookie lifetime in seconds                      |
 
-   Set both Upstash variables or neither. `pnpm build` needs `NEXT_PUBLIC_API_URL` (Next inlines
-   it at build time) but none of the Upstash variables.
+   Upstash Redis is not used for now: token refresh is de-duplicated in memory on each server
+   instance, and the backend's 20-second refresh replay window covers the rest. If you ever set the
+   Upstash variables, set both, plus `SESSION_CACHE_KEY` (`openssl rand -base64 32`). `pnpm build`
+   needs only `NEXT_PUBLIC_API_URL` (Next inlines it at build time).
 
 3. **Run the app** with `pnpm install` and `pnpm dev`, then open
    [http://localhost:3000](http://localhost:3000). Use `localhost` consistently, not `127.0.0.1`:
@@ -39,10 +37,8 @@ Checks (also run by the pre-push hook and CI): `pnpm test:run`, `pnpm typecheck`
 
 ## Deploying
 
-Production runs on Vercel. Before the first deploy, provision Upstash Redis through the Vercel
-Marketplace and set `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SESSION_CACHE_KEY`, and
-`NEXT_PUBLIC_API_URL` for both Preview and Production. A deployment without them fails on its first
-request.
+Production runs on Vercel. Before the first deploy, set `NEXT_PUBLIC_API_URL` to the deployed
+backend's URL for both Preview and Production. No other variables are needed.
 
 > **Production blocker — TODO `BACKEND_RATE_LIMIT_IP`:** the backend rate-limits by client IP.
 > Behind this BFF every request comes from the Next.js server, so all users would share one limit.
