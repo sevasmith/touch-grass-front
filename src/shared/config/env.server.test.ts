@@ -10,8 +10,6 @@ const upstash = {
   UPSTASH_REDIS_REST_URL: "https://eu1-x.upstash.io",
   UPSTASH_REDIS_REST_TOKEN: "upstash-token",
 }
-const onVercel = { VERCEL: "1" }
-const building = { VERCEL: "1", NEXT_PHASE: "phase-production-build" }
 
 describe("ServerEnvSchema", () => {
   it("requires NEXT_PUBLIC_API_URL to be a URL", () => {
@@ -34,45 +32,44 @@ describe("ServerEnvSchema", () => {
     ).toBe(false)
   })
 
-  describe("on a Vercel deployment", () => {
-    const full = { ...base, ...onVercel, ...upstash, SESSION_CACHE_KEY: KEY_32 }
-
-    it("accepts the full set of coordinator secrets", () => {
-      expect(ServerEnvSchema.safeParse(full).success).toBe(true)
-    })
-
-    it.each([
-      "UPSTASH_REDIS_REST_URL",
-      "UPSTASH_REDIS_REST_TOKEN",
-      "SESSION_CACHE_KEY",
-    ] as const)("fails when %s is missing", (name) => {
-      const env: Record<string, string> = { ...full }
-      delete env[name]
-      expect(ServerEnvSchema.safeParse(env).success).toBe(false)
-    })
-
-    it("treats an empty value as missing", () => {
-      expect(
-        ServerEnvSchema.safeParse({ ...full, SESSION_CACHE_KEY: "" }).success
-      ).toBe(false)
-    })
-  })
-
-  describe("during next build and off Vercel", () => {
-    it("does not require the coordinator secrets during next build", () => {
+  describe("coordinator secrets are optional everywhere", () => {
+    // The backend's 20-second refresh replay window makes a shared store unnecessary (research R2).
+    it("does not require them on a Vercel deployment", () => {
       expect(
         ServerEnvSchema.safeParse({
           ...base,
-          ...building,
+          VERCEL: "1",
           NODE_ENV: "production",
         }).success
       ).toBe(true)
     })
 
-    it("does not require the coordinator secrets off Vercel, even in production", () => {
+    it("does not require them off Vercel, even in production", () => {
       expect(
         ServerEnvSchema.safeParse({ ...base, NODE_ENV: "production" }).success
       ).toBe(true)
+    })
+
+    it("accepts the full set when it is given", () => {
+      expect(
+        ServerEnvSchema.safeParse({
+          ...base,
+          ...upstash,
+          SESSION_CACHE_KEY: KEY_32,
+        }).success
+      ).toBe(true)
+    })
+
+    it("treats an empty value as unset", () => {
+      const env = ServerEnvSchema.parse({
+        ...base,
+        UPSTASH_REDIS_REST_URL: "",
+        UPSTASH_REDIS_REST_TOKEN: "",
+        SESSION_CACHE_KEY: "",
+      })
+      expect(env.UPSTASH_REDIS_REST_URL).toBeUndefined()
+      expect(env.UPSTASH_REDIS_REST_TOKEN).toBeUndefined()
+      expect(env.SESSION_CACHE_KEY).toBeUndefined()
     })
   })
 
@@ -81,6 +78,12 @@ describe("ServerEnvSchema", () => {
     { UPSTASH_REDIS_REST_TOKEN: upstash.UPSTASH_REDIS_REST_TOKEN },
   ])("fails when only one Upstash variable is set (%o)", (partial) => {
     expect(ServerEnvSchema.safeParse({ ...base, ...partial }).success).toBe(
+      false
+    )
+  })
+
+  it("requires SESSION_CACHE_KEY when Upstash is set, so every instance shares one key", () => {
+    expect(ServerEnvSchema.safeParse({ ...base, ...upstash }).success).toBe(
       false
     )
   })
